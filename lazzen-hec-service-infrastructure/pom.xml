@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.lazzen.hec</groupId>
+        <artifactId>lazzen-hec-service</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>lazzen-hec-service-infrastructure</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.lazzen.hec</groupId>
+            <artifactId>lazzen-hec-service-domain</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sipa.boot.java8</groupId>
+            <artifactId>sipa-boot-aop-spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sipa.boot.java8</groupId>
+            <artifactId>sipa-boot-mysql-spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sipa.boot.java8</groupId>
+            <artifactId>sipa-boot-mvc-spring-boot-starter</artifactId>
+        </dependency>
+    </dependencies>
+</project>

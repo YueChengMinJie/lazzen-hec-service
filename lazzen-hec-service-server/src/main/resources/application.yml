@@ -1,0 +1,138 @@
+#
+# -------------------------------------------
+# SERVER CONFIGURATION
+# -------------------------------------------
+#
+server:
+  shutdown: graceful
+  port: 8975
+  tomcat:
+    max-connections: 0
+    threads:
+      max: 0
+  servlet:
+    encoding:
+      force: true
+#
+# -------------------------------------------
+# SPRING CONFIGURATION
+# -------------------------------------------
+#
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 2m
+  application:
+    name: lazzen-hec-service
+  main:
+    allow-bean-definition-overriding: true
+  log:
+    prefix: logs
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  datasource:
+    druid:
+      web-stat-filter:
+        enabled: false
+        session-stat-enable: false
+      stat-view-servlet:
+        enabled: false
+        reset-enable: false
+    dynamic:
+      strict: true
+      primary: mysql
+#
+# -------------------------------------------
+# ACTUATOR CONFIGURATION
+# -------------------------------------------
+#
+management:
+  health:
+    db:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: false
+#
+# -------------------------------------------
+# LOG CONFIGURATION
+# -------------------------------------------
+#
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    springfox: error
+#
+# -------------------------------------------
+# MYBATIS-PLUS CONFIGURATION
+# -------------------------------------------
+#
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.lazzen.hec.**.entity.**
+  type-enums-package: com.lazzen.hec.**.enumerate.**
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: ID_WORKER
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+#
+# -------------------------------------------
+# SIPA BOOT CONFIGURATION
+# -------------------------------------------
+#
+sipa.boot:
+  #
+  # -------------------------------------------
+  # MVC CONFIGURATION
+  # -------------------------------------------
+  #
+  mvc:
+    request:
+      logging:
+        enabled: true
+        include-headers: true
+        include-query-string: true
+        include-payload: true
+        include-client-info: true
+  #
+  # -------------------------------------------
+  # DYNAMIC DATA SOURCE CONFIGURATION
+  # -------------------------------------------
+  #
+  datasource:
+    enabled: true
+    names:
+      - mysql
+    dynamics:
+      mysql:
+        datasource:
+          names: master,slave0
+          master:
+            type: com.alibaba.druid.pool.DruidDataSource
+            driver-class-name: com.mysql.cj.jdbc.Driver
+            url:
+            username:
+            password:
+          slave0:
+            type: com.alibaba.druid.pool.DruidDataSource
+            driver-class-name: com.mysql.cj.jdbc.Driver
+            url:
+            username:
+            password:
+        masterslave:
+          load-balance-algorithm-type: round_robin
+          name: ms
+          master-data-source-name: master
+          slave-data-source-names: slave0

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.sipa.boot.java8</groupId>
+        <artifactId>sipa-boot-spring-boot-dependencies</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>com.lazzen.hec</groupId>
+    <artifactId>lazzen-hec-service</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>lazzen-hec-service-adapter</module>
+        <module>lazzen-hec-service-app</module>
+        <module>lazzen-hec-service-client</module>
+        <module>lazzen-hec-service-domain</module>
+        <module>lazzen-hec-service-infrastructure</module>
+        <module>lazzen-hec-service-server</module>
+    </modules>
+
+    <scm>
+        <connection>scm:${project.scm.type}:${project.scm.path}</connection>
+        <developerConnection>scm:${project.scm.type}:${project.scm.path}</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <project.scm.path>https://github.com/YueChengMinJie/lazzen-hec-service.git</project.scm.path>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.lazzen.hec</groupId>
+                <artifactId>lazzen-hec-service-adapter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lazzen.hec</groupId>
+                <artifactId>lazzen-hec-service-app</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lazzen.hec</groupId>
+                <artifactId>lazzen-hec-service-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lazzen.hec</groupId>
+                <artifactId>lazzen-hec-service-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lazzen.hec</groupId>
+                <artifactId>lazzen-hec-service-infrastructure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
