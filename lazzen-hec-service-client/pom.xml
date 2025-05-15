@@ -11,6 +11,7 @@
 
     <artifactId>lazzen-hec-service-client</artifactId>
 
+    <!-- 暂时不开发，等接入微服务再开发 -->
     <dependencies>
     </dependencies>
 </project>

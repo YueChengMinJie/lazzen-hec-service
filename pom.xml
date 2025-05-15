@@ -31,6 +31,7 @@
     </scm>
 
     <properties>
+        <project.scm.type>git</project.scm.type>
         <project.scm.path>https://github.com/YueChengMinJie/lazzen-hec-service.git</project.scm.path>
     </properties>
 
