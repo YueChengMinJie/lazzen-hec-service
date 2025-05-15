@@ -20,13 +20,13 @@ sipa.boot:
           master:
             type: com.alibaba.druid.pool.DruidDataSource
             driver-class-name: com.mysql.cj.jdbc.Driver
-            url: jdbc:mysql://xx:3306/water_gas_service?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false&serverTimezone=PST&allowPublicKeyRetrieval=true
+            url: jdbc:mysql://xx:3306/water_gas_service?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
             username: root
             password: xx
           slave0:
             type: com.alibaba.druid.pool.DruidDataSource
             driver-class-name: com.mysql.cj.jdbc.Driver
-            url: jdbc:mysql://xx:3306/water_gas_service?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false&serverTimezone=PST&allowPublicKeyRetrieval=true
+            url: jdbc:mysql://xx:3306/water_gas_service?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
             username: root
             password: xx
         masterslave:

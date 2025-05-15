@@ -84,7 +84,7 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-      id-type: ID_WORKER
+      id-type: assign_id
       logic-delete-value: 1
       logic-not-delete-value: 0
 #
@@ -129,13 +129,13 @@ sipa.boot:
           master:
             type: com.alibaba.druid.pool.DruidDataSource
             driver-class-name: com.mysql.cj.jdbc.Driver
-            url: jdbc:mysql://139.9.236.144:3306/water_gas_service?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false&serverTimezone=PST&allowPublicKeyRetrieval=true
+            url: jdbc:mysql://139.9.236.144:3306/water_gas_service?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
             username: root
             password: N@der2022+1
           slave0:
             type: com.alibaba.druid.pool.DruidDataSource
             driver-class-name: com.mysql.cj.jdbc.Driver
-            url: jdbc:mysql://139.9.236.144:3306/water_gas_service?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false&serverTimezone=PST&allowPublicKeyRetrieval=true
+            url: jdbc:mysql://139.9.236.144:3306/water_gas_service?useUnicode=true&characterEncoding=utf8&useSSL=false&tinyInt1isBit=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
             username: root
             password: N@der2022+1
         masterslave:
