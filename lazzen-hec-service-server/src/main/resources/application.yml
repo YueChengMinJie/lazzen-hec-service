@@ -108,6 +108,13 @@ sipa.boot:
         include-client-info: true
   #
   # -------------------------------------------
+  # SWAGGER CONFIGURATION
+  # -------------------------------------------
+  #
+  swagger:
+    basePackage: com.lazzen.hec
+  #
+  # -------------------------------------------
   # DYNAMIC DATA SOURCE CONFIGURATION
   # -------------------------------------------
   #
