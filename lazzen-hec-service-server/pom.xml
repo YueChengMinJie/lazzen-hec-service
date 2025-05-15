@@ -17,6 +17,15 @@
             <artifactId>lazzen-hec-service-adapter</artifactId>
         </dependency>
 
+        <!-- utilities -->
+        <!-- https://mp.weixin.qq.com/s?__biz=MzAwMjk5NTY3Mw==&mid=2247483950&idx=1&sn=47c6c1fed54b134f46f6dedafd34db0c&chksm=9ac0a698adb72f8e769bcfbff5a4fb0450f181bb754a2ad615dc17002f14d7ec039c0e24a1d7&token=395785991&lang=zh_CN#rd -->
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+            <version>2.2</version>
+        </dependency>
+
+        <!-- spring boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>

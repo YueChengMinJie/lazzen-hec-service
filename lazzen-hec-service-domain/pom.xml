@@ -16,5 +16,10 @@
             <groupId>com.lazzen.hec</groupId>
             <artifactId>lazzen-hec-service-client</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.sipa.boot.java8</groupId>
+            <artifactId>sipa-boot-swagger-spring-boot-starter</artifactId>
+        </dependency>
     </dependencies>
 </project>

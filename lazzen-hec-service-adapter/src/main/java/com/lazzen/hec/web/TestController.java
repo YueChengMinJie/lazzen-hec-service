@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lazzen.hec.dto.TestDto;
 import com.sipa.boot.java8.common.dtos.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 public class TestController {
     @PostMapping("/1")
     @Operation(summary = "测试1", description = "测试1")
-    public ResponseWrapper<?> test1() {
-        return ResponseWrapper.success();
+    public ResponseWrapper<TestDto> test1() {
+        return ResponseWrapper.successOf(TestDto.builder().id(1).build());
     }
 }

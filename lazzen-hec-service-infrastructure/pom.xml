@@ -17,6 +17,7 @@
             <artifactId>lazzen-hec-service-domain</artifactId>
         </dependency>
 
+        <!-- sipa boot -->
         <dependency>
             <groupId>com.sipa.boot.java8</groupId>
             <artifactId>sipa-boot-aop-spring-boot-starter</artifactId>
