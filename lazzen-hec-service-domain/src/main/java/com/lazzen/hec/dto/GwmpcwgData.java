@@ -16,6 +16,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GwmpcwgData {
+    private Integer id;
+
+    private String label;
+
     private BigDecimal val;
 
     private String unit;
