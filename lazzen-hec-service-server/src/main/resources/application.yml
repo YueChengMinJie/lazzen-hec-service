@@ -41,7 +41,7 @@ spring:
         reset-enable: false
     dynamic:
       strict: true
-      primary: 144_iot
+      primary: 144iot
 #
 # -------------------------------------------
 # ACTUATOR CONFIGURATION
@@ -121,10 +121,10 @@ sipa.boot:
   datasource:
     enabled: true
     names:
-      - 144_iot
-      - 144_px
+      - 144iot
+      - 144px
     dynamics:
-      144_iot:
+      144iot:
         datasource:
           names: master,slave0
           master:
@@ -144,7 +144,7 @@ sipa.boot:
           name: ms
           master-data-source-name: master
           slave-data-source-names: slave0
-      144_px:
+      144px:
         datasource:
           names: master,slave0
           master:
