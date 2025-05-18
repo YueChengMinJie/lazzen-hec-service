@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-@DS("144px")
-public class BreakerRepository {
+@DS("smart-management")
+public class SmartManagementRepository {
     private final CoreBreakerMapper coreBreakerMapper;
 
     public String assertSnByDomainCode(String domainCode)throws NoneExistException {

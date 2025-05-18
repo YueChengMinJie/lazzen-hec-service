@@ -4,7 +4,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 
+ * 能耗日表(小时)
  * @TableName category_energy
  */
 @Data

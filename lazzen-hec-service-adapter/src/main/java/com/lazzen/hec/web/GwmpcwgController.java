@@ -14,6 +14,9 @@ import com.sipa.boot.java8.common.dtos.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 
 /**
  * @author caszhou
@@ -24,12 +27,14 @@ import io.swagger.v3.oas.annotations.Operation;
 @RequiredArgsConstructor
 @Slf4j
 public class GwmpcwgController {
+
     private final CategoryEnergyService categoryEnergyService;
+
     @GetMapping
-    @Operation(summary = "获取实时数据")
-    public ResponseWrapper<List<GwmpcwgData>> data(String domainCode) {
+    @Operation(summary = "获取指定domain,deviceType(可空)实时数据")
+    public ResponseWrapper<List<GwmpcwgData>> immediatelyData(@Valid @NotNull(message = "缺少domainCode") String domainCode, String deviceType) {
         try {
-            return ResponseWrapper.successOf(categoryEnergyService.getImmediatelyBySn(domainCode));
+            return ResponseWrapper.successOf(categoryEnergyService.getImmediatelyBySn(domainCode,deviceType));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return ResponseWrapper.errorOf(e.getMessage());

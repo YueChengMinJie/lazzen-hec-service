@@ -2,10 +2,9 @@ package com.lazzen.hec.service;
 
 import com.lazzen.hec.convert.GwmpcwgDataConvert;
 import com.lazzen.hec.dto.GwmpcwgData;
-import com.lazzen.hec.po.DeviceBusinessPointSurvey;
-import com.lazzen.hec.repository.BreakerRepository;
-import com.lazzen.hec.repository.IotRepository;
-import com.sipa.boot.java8.common.utils.StringUtils;
+import com.lazzen.hec.po.DevicePointData;
+import com.lazzen.hec.repository.SmartManagementRepository;
+import com.lazzen.hec.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +18,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CategoryEnergyService  {
-    private final IotRepository iotRepository;
-    private final BreakerRepository breakerRepository;
+    private final StoreRepository storeRepository;
+    private final SmartManagementRepository smartManagementRepository;
 
     /**
      * 获取该设备实时数据
@@ -28,9 +27,9 @@ public class CategoryEnergyService  {
      * @return
      * @throws Exception
      */
-    public List<GwmpcwgData> getImmediatelyBySn(String domainCode) throws Exception{
-        String sn = breakerRepository.assertSnByDomainCode(domainCode);
-        List<DeviceBusinessPointSurvey> immediatelyBySn = iotRepository.getImmediatelyBySn(sn);
+    public List<GwmpcwgData> getImmediatelyBySn(String domainCode,String deviceType) throws Exception{
+        String sn = smartManagementRepository.assertSnByDomainCode(domainCode);
+        List<DevicePointData> immediatelyBySn = storeRepository.getImmediatelyBySn(sn,deviceType);
         return GwmpcwgDataConvert.convert(immediatelyBySn);
     }
 
