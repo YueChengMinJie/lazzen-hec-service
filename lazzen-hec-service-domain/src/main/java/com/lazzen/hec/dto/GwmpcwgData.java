@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GwmpcwgData {
-    private Integer id;
+    private Long id;
 
     private String label;
 
