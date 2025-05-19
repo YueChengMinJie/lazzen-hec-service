@@ -65,6 +65,7 @@ datasource:
 ## 编译
 
 ```bash
+git clone https://github.com/YueChengMinJie/sipa-boot.git
 cd sipa-boot-java8
 mvn -U -e -B clean install -DskipTests
 
