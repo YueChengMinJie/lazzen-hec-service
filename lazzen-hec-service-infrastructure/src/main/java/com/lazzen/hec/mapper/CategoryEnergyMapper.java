@@ -1,7 +1,5 @@
 package com.lazzen.hec.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.lazzen.hec.po.CategoryEnergy;
 
@@ -11,7 +9,6 @@ import com.lazzen.hec.po.CategoryEnergy;
  * @createDate 2025-05-18 22:01:37
  * @Entity com.lazzen.hec.po.CategoryEnergy
  */
-@Mapper
 public interface CategoryEnergyMapper extends BaseMapper<CategoryEnergy> {
-
+    //
 }

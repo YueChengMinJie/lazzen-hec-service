@@ -10,9 +10,13 @@ import com.lazzen.hec.po.CoreBreaker;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * @author guo
+ * @createDate 2025-05-18 21:59:34
+ */
 @Component
-@RequiredArgsConstructor
 @DS("smart-management")
+@RequiredArgsConstructor
 public class SmartManagementRepository {
     private final CoreBreakerMapper coreBreakerMapper;
 

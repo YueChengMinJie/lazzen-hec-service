@@ -12,9 +12,13 @@ import com.sipa.boot.java8.common.utils.StringUtils;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * @author guo
+ * @createDate 2025-05-18 21:59:34
+ */
 @Component
-@RequiredArgsConstructor
 @DS("lite-store")
+@RequiredArgsConstructor
 public class StoreRepository {
     private final CategoryEnergyMapper categoryEnergyMapper;
 

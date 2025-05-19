@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GwmpcwgData {
+public class DeviceCurrentData {
     private Long id;
 
     private String label;

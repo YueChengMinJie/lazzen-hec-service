@@ -1,7 +1,5 @@
 package com.lazzen.hec.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.lazzen.hec.po.DevicePointData;
 
@@ -11,7 +9,6 @@ import com.lazzen.hec.po.DevicePointData;
  * @createDate 2025-05-18 23:16:17
  * @Entity com.lazzen.hec.po.DevicePointData
  */
-@Mapper
 public interface DevicePointDataMapper extends BaseMapper<DevicePointData> {
-
+    //
 }

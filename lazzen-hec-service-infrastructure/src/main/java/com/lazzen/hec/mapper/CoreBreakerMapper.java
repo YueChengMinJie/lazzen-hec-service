@@ -1,7 +1,5 @@
 package com.lazzen.hec.mapper;
 
-import org.apache.ibatis.annotations.Mapper;
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.lazzen.hec.po.CoreBreaker;
 
@@ -11,7 +9,6 @@ import com.lazzen.hec.po.CoreBreaker;
  * @createDate 2025-05-18 22:40:22
  * @Entity com.lazzen.hec.po.CoreBreaker
  */
-@Mapper
 public interface CoreBreakerMapper extends BaseMapper<CoreBreaker> {
-
+    //
 }

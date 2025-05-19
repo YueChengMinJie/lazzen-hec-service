@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.lazzen.hec.convert.GwmpcwgDataConvert;
-import com.lazzen.hec.dto.GwmpcwgData;
+import com.lazzen.hec.dto.DeviceCurrentData;
 import com.lazzen.hec.po.DevicePointData;
 import com.lazzen.hec.repository.SmartManagementRepository;
 import com.lazzen.hec.repository.StoreRepository;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Service
 @RequiredArgsConstructor
-public class CategoryEnergyService {
+public class DeviceService {
     private final StoreRepository storeRepository;
 
     private final SmartManagementRepository smartManagementRepository;
@@ -31,7 +31,7 @@ public class CategoryEnergyService {
      * @return
      * @throws Exception
      */
-    public List<GwmpcwgData> getImmediatelyBySn(String domainCode, String deviceType) throws Exception {
+    public List<DeviceCurrentData> getImmediatelyBySn(String domainCode, String deviceType) throws Exception {
         String sn = smartManagementRepository.assertSnByDomainCode(domainCode);
         List<DevicePointData> immediatelyBySn = storeRepository.getImmediatelyBySn(sn, deviceType);
         return GwmpcwgDataConvert.convert(immediatelyBySn);
