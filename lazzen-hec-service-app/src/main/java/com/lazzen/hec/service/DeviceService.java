@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Objects;
 
 import com.lazzen.hec.constants.BusinessConstants;
+import com.lazzen.hec.convert.DeviceConvert;
+import com.lazzen.hec.convert.WaterConvert;
 import com.lazzen.hec.dto.CurrentWaterData;
 import com.lazzen.hec.form.CurrentWaterForm;
 import com.sipa.boot.java8.common.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
-import com.lazzen.hec.convert.Convert;
 import com.lazzen.hec.dto.DeviceCurrentData;
 import com.lazzen.hec.po.DeviceOnlineStatus;
 import com.lazzen.hec.po.DevicePointData;
@@ -36,13 +37,13 @@ public class DeviceService {
     public List<DeviceCurrentData> getImmediatelyBySn(String domainCode, String deviceType) {
         String sn = smartManagementRepository.assertSnByDomainCode(domainCode);
         List<DevicePointData> immediatelyBySn = storeRepository.getImmediatelyBySn(sn, deviceType);
-        return Convert.DeviceCurrentDataConvert.convertDpa(immediatelyBySn);
+        return DeviceConvert.convertDpa(immediatelyBySn);
     }
 
     public Boolean getStatusByDomainCode(String domainCode) {
         String sn = smartManagementRepository.assertSnByDomainCode(domainCode);
         DeviceOnlineStatus statusBySn = storeRepository.getStatusBySn(sn);
-        return Convert.DeviceCurrentDataConvert.convertOnline(statusBySn);
+        return DeviceConvert.convertOnline(statusBySn);
     }
 
     /**
@@ -54,7 +55,7 @@ public class DeviceService {
         if(immediatelyBySn.isEmpty()){
             return null;
         }
-        List<CurrentWaterData> currentWaterData = Convert.WaterConvert.convertSyb(immediatelyBySn);
+        List<CurrentWaterData> currentWaterData = WaterConvert.convertSyb(immediatelyBySn);
         if(currentWaterData.isEmpty()){
             return currentWaterData;
         }
