@@ -1,10 +1,12 @@
 package com.lazzen.hec.po;
 
 import java.util.Date;
+
 import lombok.Data;
 
 /**
  * 设备在线状态
+ * 
  * @TableName device_online_status
  */
 @Data

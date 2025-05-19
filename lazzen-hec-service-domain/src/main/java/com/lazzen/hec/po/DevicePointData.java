@@ -1,10 +1,12 @@
 package com.lazzen.hec.po;
 
 import java.util.Date;
+
 import lombok.Data;
 
 /**
  * 实时值
+ * 
  * @TableName device_point_data
  */
 @Data

@@ -1,10 +1,10 @@
 package com.lazzen.hec.po;
 
 import java.util.Date;
+
 import lombok.Data;
 
 /**
- * 
  * @TableName category_energy_month
  */
 @Data

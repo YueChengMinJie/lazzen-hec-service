@@ -1,10 +1,12 @@
 package com.lazzen.hec.po;
 
 import java.util.Date;
+
 import lombok.Data;
 
 /**
  * 【基础服务】设备表
+ * 
  * @TableName core_breaker
  */
 @Data

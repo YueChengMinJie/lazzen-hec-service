@@ -1,10 +1,12 @@
 package com.lazzen.hec.po;
 
 import java.util.Date;
+
 import lombok.Data;
 
 /**
  * 测量数据(曲线) 15分钟存一次 (只存7天的)
+ * 
  * @TableName device_business_point_survey
  */
 @Data
