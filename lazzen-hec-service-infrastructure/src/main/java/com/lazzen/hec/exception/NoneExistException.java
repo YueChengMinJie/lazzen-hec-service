@@ -2,7 +2,11 @@ package com.lazzen.hec.exception;
 
 import java.util.List;
 
-public class NoneExistException extends Exception {
+/**
+ * @author guo
+ * @createDate 2025-05-18 21:59:34
+ */
+public class NoneExistException extends RuntimeException {
     private static final String MSG = "不存在对应的数据";
 
     public NoneExistException(String msg) {

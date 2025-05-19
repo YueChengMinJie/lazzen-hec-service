@@ -31,19 +31,13 @@ public class DeviceController {
     @GetMapping("/status")
     @Operation(summary = "获取设备状态")
     public ResponseWrapper<Boolean> data(String domainCode) {
-        // todo
-        return ResponseWrapper.successOf(true);
+        return ResponseWrapper.successOf(deviceService.getStatusByDomainCode(domainCode));
     }
 
     @GetMapping("/current/data")
     @Operation(summary = "获取指定domain,deviceType(可空)实时数据")
     public ResponseWrapper<List<DeviceCurrentData>>
         immediatelyData(@Valid @NotNull(message = "缺少domainCode") String domainCode, String deviceType) {
-        try {
-            return ResponseWrapper.successOf(deviceService.getImmediatelyBySn(domainCode, deviceType));
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return ResponseWrapper.errorOf(e.getMessage());
-        }
+        return ResponseWrapper.successOf(deviceService.getImmediatelyBySn(domainCode, deviceType));
     }
 }

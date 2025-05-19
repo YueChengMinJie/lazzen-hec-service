@@ -2,6 +2,8 @@ package com.lazzen.hec.po;
 
 import java.util.Date;
 
+import com.sipa.boot.java8.common.enums.EZeroOne;
+
 import lombok.Data;
 
 /**
@@ -59,7 +61,7 @@ public class DeviceOnlineStatus {
     /**
      * 1在线 0离线
      */
-    private Integer link;
+    private EZeroOne link;
 
     /**
      * 创建时间

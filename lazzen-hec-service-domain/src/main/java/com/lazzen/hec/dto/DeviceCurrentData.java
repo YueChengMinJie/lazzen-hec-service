@@ -1,7 +1,5 @@
 package com.lazzen.hec.dto;
 
-import java.math.BigDecimal;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +16,9 @@ import lombok.NoArgsConstructor;
 public class DeviceCurrentData {
     private Long id;
 
-    private String label;
+    private String name;
 
-    private BigDecimal val;
+    private String value;
 
     private String unit;
 }
