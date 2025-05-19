@@ -47,8 +47,6 @@ public class DeviceService {
 
     /**
      * 水中控台数据集(水仪表)
-     * @param form
-     * @return
      */
     public List<CurrentWaterData> currentWaterPage(CurrentWaterForm form) {
         String sn = smartManagementRepository.assertSnByDomainCode(form.getDomainCode());
@@ -60,6 +58,7 @@ public class DeviceService {
         if(currentWaterData.isEmpty()){
             return currentWaterData;
         }
+        //页面筛选
         if(!StringUtils.isNullOrEmpty(form.getWaterDeviceName())){
             currentWaterData.removeIf(e->!e.getName().contains(form.getWaterDeviceName()));
         }
