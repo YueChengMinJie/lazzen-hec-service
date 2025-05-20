@@ -6,7 +6,7 @@ import com.lazzen.hec.dto.DeviceCurrentData;
 import com.lazzen.hec.po.DeviceOnlineStatus;
 import com.lazzen.hec.po.DevicePointData;
 
-public class DeviceConvert extends Convert {
+public class DeviceDetailDataConvert extends Convert {
     public static List<DeviceCurrentData> convertDpa(List<DevicePointData> po) {
         return getMapperFacade().mapAsList(po, DeviceCurrentData.class);
     }

@@ -14,16 +14,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CurrentWaterData {
-    @Schema(description = "水仪表名字 ->水仪表1")
+public class CurrentDetailData {
+    @Schema(description = "水仪表名字 ->水仪表1  蒸汽仪表名字->气仪表1")
     private String name;
 
-    @Schema(description = "水仪表的在线状态")
+    @Schema(description = "仪表的在线状态")
     private boolean link;
 
-    @Schema(description = "水仪表的瞬时值")
+    @Schema(description = "仪表的瞬时值")
     private String value;
 
-    @Schema(description = "水仪表的总流量")
+    @Schema(description = "仪表的总流量")
     private String totalValue;
 }

@@ -10,12 +10,27 @@ public interface BusinessConstants {
     interface Water {
         String SYB = "SYB";
 
-        String SYB_NAME = "水仪表";
+        String NAME_PREFIX = "水仪表";
 
-        String SYB_FORWARD_TOTAL = "正向总量";
+        String FORWARD_TOTAL = "正向总量";
 
-        String SYB_REVERSE_TOTAL = "反向总量";
+        String REVERSE_TOTAL = "反向总量";
 
-        String SYB_MOMENT = "瞬时流量";
+        String MOMENT = "瞬时流量";
+    }
+
+    /**
+     * 蒸汽记录仪
+     */
+    interface Steam {
+        String QYB = "QYB";
+
+        String NAME_PREFIX = "气仪表";
+
+        String FORWARD_TOTAL = "累积值";
+
+        String REVERSE_TOTAL = "没有反向";
+
+        String MOMENT = "实时值";
     }
 }

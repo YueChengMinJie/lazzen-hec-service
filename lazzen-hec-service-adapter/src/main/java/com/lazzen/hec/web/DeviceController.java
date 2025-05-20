@@ -5,12 +5,16 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.lazzen.hec.constants.BusinessConstants;
+import com.lazzen.hec.convert.SteamDetailDataConvert;
+import com.lazzen.hec.convert.WaterDetailDataConvert;
+import com.lazzen.hec.form.CurrentSteamForm;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.lazzen.hec.dto.CurrentWaterData;
+import com.lazzen.hec.dto.CurrentDetailData;
 import com.lazzen.hec.dto.DeviceCurrentData;
 import com.lazzen.hec.form.CurrentWaterForm;
 import com.lazzen.hec.service.DeviceService;
@@ -30,6 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/device")
 public class DeviceController {
     private final DeviceService deviceService;
+    private final WaterDetailDataConvert waterConvert;
+    private final SteamDetailDataConvert steamConvert;
 
     @GetMapping("/status")
     @Operation(summary = "获取设备状态")
@@ -46,7 +52,12 @@ public class DeviceController {
 
     @GetMapping("/current/water")
     @Operation(summary = "水系统中控屏")
-    public ResponseWrapper<List<CurrentWaterData>> currentWaterPage(@RequestBody CurrentWaterForm form) {
-        return ResponseWrapper.successOf(deviceService.currentWaterPage(form));
+    public ResponseWrapper<List<CurrentDetailData>> currentWater(@RequestBody CurrentWaterForm form) {
+        return ResponseWrapper.successOf(deviceService.currentDetailData(form,waterConvert, BusinessConstants.Water.SYB));
+    }
+    @GetMapping("/current/steam")
+    @Operation(summary = "蒸汽记录仪")
+    public ResponseWrapper<List<CurrentDetailData>> currentSteam(@RequestBody CurrentSteamForm form) {
+        return ResponseWrapper.successOf(deviceService.currentDetailData(form,steamConvert, BusinessConstants.Steam.QYB));
     }
 }

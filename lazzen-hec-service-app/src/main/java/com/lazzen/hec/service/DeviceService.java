@@ -3,14 +3,13 @@ package com.lazzen.hec.service;
 import java.util.List;
 import java.util.Objects;
 
+import com.lazzen.hec.convert.DetailDataConvert;
+import com.lazzen.hec.form.DetailForm;
 import org.springframework.stereotype.Service;
 
-import com.lazzen.hec.constants.BusinessConstants;
-import com.lazzen.hec.convert.DeviceConvert;
-import com.lazzen.hec.convert.WaterConvert;
-import com.lazzen.hec.dto.CurrentWaterData;
+import com.lazzen.hec.convert.DeviceDetailDataConvert;
+import com.lazzen.hec.dto.CurrentDetailData;
 import com.lazzen.hec.dto.DeviceCurrentData;
-import com.lazzen.hec.form.CurrentWaterForm;
 import com.lazzen.hec.po.DeviceOnlineStatus;
 import com.lazzen.hec.po.DevicePointData;
 import com.lazzen.hec.repository.SmartManagementRepository;
@@ -37,35 +36,35 @@ public class DeviceService {
     public List<DeviceCurrentData> getImmediatelyBySn(String domainCode, String deviceType) {
         String sn = smartManagementRepository.assertSnByDomainCode(domainCode);
         List<DevicePointData> immediatelyBySn = storeRepository.getImmediatelyBySn(sn, deviceType);
-        return DeviceConvert.convertDpa(immediatelyBySn);
+        return DeviceDetailDataConvert.convertDpa(immediatelyBySn);
     }
 
     public Boolean getStatusByDomainCode(String domainCode) {
         String sn = smartManagementRepository.assertSnByDomainCode(domainCode);
         DeviceOnlineStatus statusBySn = storeRepository.getStatusBySn(sn);
-        return DeviceConvert.convertOnline(statusBySn);
+        return DeviceDetailDataConvert.convertOnline(statusBySn);
     }
 
     /**
      * 水中控台数据集(水仪表)
      */
-    public List<CurrentWaterData> currentWaterPage(CurrentWaterForm form) {
+    public List<CurrentDetailData> currentDetailData(DetailForm form, DetailDataConvert detailDataConvert, String deviceType) {
         String sn = smartManagementRepository.assertSnByDomainCode(form.getDomainCode());
-        List<DevicePointData> immediatelyBySn = storeRepository.getImmediatelyBySn(sn, BusinessConstants.Water.SYB);
+        List<DevicePointData> immediatelyBySn = storeRepository.getImmediatelyBySn(sn,deviceType);
         if (immediatelyBySn.isEmpty()) {
             return null;
         }
-        List<CurrentWaterData> currentWaterData = WaterConvert.convertSyb(immediatelyBySn);
-        if (currentWaterData.isEmpty()) {
-            return currentWaterData;
+        List<CurrentDetailData> currentDetailData = detailDataConvert.convertDetailData(immediatelyBySn);
+        if (currentDetailData.isEmpty()) {
+            return currentDetailData;
         }
         // 页面筛选
-        if (!StringUtils.isNullOrEmpty(form.getWaterDeviceName())) {
-            currentWaterData.removeIf(e -> !e.getName().contains(form.getWaterDeviceName()));
+        if (!StringUtils.isNullOrEmpty(form.getDeviceName())) {
+            currentDetailData.removeIf(e -> !e.getName().contains(form.getDeviceName()));
         }
         if (form.getLink() != null) {
-            currentWaterData.removeIf(e -> !Objects.equals(e.isLink(), form.getLink()));
+            currentDetailData.removeIf(e -> !Objects.equals(e.isLink(), form.getLink()));
         }
-        return currentWaterData;
+        return currentDetailData;
     }
 }
