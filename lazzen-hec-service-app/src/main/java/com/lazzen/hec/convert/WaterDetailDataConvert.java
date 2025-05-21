@@ -1,10 +1,13 @@
 package com.lazzen.hec.convert;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.lazzen.hec.enumeration.DetailDataEnum;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import com.lazzen.hec.enumeration.DetailDataEnum;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -20,5 +23,11 @@ public class WaterDetailDataConvert extends DetailDataConvert {
     @Override
     DetailDataEnum getDetailDataEnum() {
         return DetailDataEnum.WATER;
+    }
+
+    @Override
+    String getKeyFromGroup(Matcher matcher) {
+        // 提取 <反向总量1>的数字
+        return matcher.group(2);
     }
 }

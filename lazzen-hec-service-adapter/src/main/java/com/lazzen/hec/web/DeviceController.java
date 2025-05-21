@@ -5,18 +5,18 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.web.bind.annotation.*;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.convert.SteamDetailDataConvert;
 import com.lazzen.hec.convert.WaterDetailDataConvert;
-import com.lazzen.hec.form.CurrentSteamForm;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.lazzen.hec.dto.CategoryEnergyData;
 import com.lazzen.hec.dto.CurrentDetailData;
 import com.lazzen.hec.dto.DeviceCurrentData;
+import com.lazzen.hec.form.CurrentSteamForm;
 import com.lazzen.hec.form.CurrentWaterForm;
+import com.lazzen.hec.form.DataQueryForm;
 import com.lazzen.hec.service.DeviceService;
 import com.sipa.boot.java8.common.dtos.ResponseWrapper;
 
@@ -34,7 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/device")
 public class DeviceController {
     private final DeviceService deviceService;
+
     private final WaterDetailDataConvert waterConvert;
+
     private final SteamDetailDataConvert steamConvert;
 
     @GetMapping("/status")
@@ -50,14 +52,24 @@ public class DeviceController {
         return ResponseWrapper.successOf(deviceService.getImmediatelyBySn(domainCode, deviceType));
     }
 
-    @GetMapping("/current/water")
+    @PostMapping("/current/water")
     @Operation(summary = "水系统中控屏")
-    public ResponseWrapper<List<CurrentDetailData>> currentWater(@RequestBody CurrentWaterForm form) {
-        return ResponseWrapper.successOf(deviceService.currentDetailData(form,waterConvert, BusinessConstants.Water.SYB));
+    public ResponseWrapper<List<CurrentDetailData>> currentWater(@Valid @RequestBody CurrentWaterForm form) {
+        return ResponseWrapper
+            .successOf(deviceService.currentDetailData(form, waterConvert, BusinessConstants.Water.SYB));
     }
-    @GetMapping("/current/steam")
+
+    @PostMapping("/current/steam")
     @Operation(summary = "蒸汽记录仪")
-    public ResponseWrapper<List<CurrentDetailData>> currentSteam(@RequestBody CurrentSteamForm form) {
-        return ResponseWrapper.successOf(deviceService.currentDetailData(form,steamConvert, BusinessConstants.Steam.QYB));
+    public ResponseWrapper<List<CurrentDetailData>> currentSteam(@Valid @RequestBody CurrentSteamForm form) {
+        return ResponseWrapper
+            .successOf(deviceService.currentDetailData(form, steamConvert, BusinessConstants.Steam.QYB));
+    }
+
+    @PostMapping("/history/analysis")
+    @Operation(summary = "分析数据")
+    public ResponseWrapper<Page<CategoryEnergyData>> historySteam(@Valid @RequestBody DataQueryForm form) {
+        return ResponseWrapper
+            .successOf(deviceService.historyCategoryEnergy(form, BusinessConstants.Electronic.CATEGORY));
     }
 }

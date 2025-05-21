@@ -7,7 +7,10 @@ import org.springframework.stereotype.Component;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lazzen.hec.form.DataQueryForm;
 import com.lazzen.hec.mapper.*;
+import com.lazzen.hec.po.CategoryEnergy;
 import com.lazzen.hec.po.DeviceOnlineStatus;
 import com.lazzen.hec.po.DevicePointData;
 import com.sipa.boot.java8.common.utils.StringUtils;
@@ -44,5 +47,26 @@ public class StoreRepository {
             .eq(DeviceOnlineStatus::getSn, sn)
             .orderByDesc(DeviceOnlineStatus::getId)
             .last(SipaBootMysqlConstants.LIMIT_ONE));
+    }
+
+    public Page<CategoryEnergy> pageCategory(DataQueryForm form, String categoryType, String sn) {
+        LambdaQueryWrapper<CategoryEnergy> queryWrapper = Wrappers.<CategoryEnergy>lambdaQuery()
+            .eq(CategoryEnergy::getCategory, categoryType)
+            .eq(CategoryEnergy::getSn, sn)
+            .eq(CategoryEnergy::getCode, form.getPointCode());
+        // todo getDateIndex 真实是什么样的 到底是时间戳还是ymd
+        if (form.getStartDate() != null) {
+            queryWrapper.and(wrapper -> wrapper.ge(CategoryEnergy::getDateIndex, form.getStartDate().getDayOfMonth())
+                .or()
+                .gt(CategoryEnergy::getDateIndex, form.getStartDate().getDayOfMonth())
+                .and(i -> i.ge(CategoryEnergy::getHourIndex, form.getStartDate().getHour())));
+        }
+        if (form.getEndDate() != null) {
+            queryWrapper.and(wrapper -> wrapper.le(CategoryEnergy::getDateIndex, form.getEndDate().getDayOfMonth())
+                .or()
+                .lt(CategoryEnergy::getDateIndex, form.getEndDate().getDayOfMonth())
+                .and(i -> i.le(CategoryEnergy::getHourIndex, form.getEndDate().getHour())));
+        }
+        return categoryEnergyMapper.selectPage(Page.of(form.getPage(), form.getSize()), queryWrapper);
     }
 }

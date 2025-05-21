@@ -26,4 +26,15 @@ public class CurrentDetailData {
 
     @Schema(description = "仪表的总流量")
     private String totalValue;
+
+    // 下面这三个code 分析哪类数据就传哪个?
+
+    @Schema(description = "正向总量/累积值的点位code 分析数据需要")
+    private String forwardPointCode;
+
+    @Schema(description = "瞬时流量/实时值的点位code 分析数据需要")
+    private String momentPointCode;
+
+    @Schema(description = "反向总量的点位code 分析数据需要")
+    private String reversePointCode;
 }

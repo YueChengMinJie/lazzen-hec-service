@@ -33,4 +33,8 @@ public interface BusinessConstants {
 
         String MOMENT = "实时值";
     }
+
+    interface Electronic {
+        String CATEGORY = "electric";
+    }
 }
