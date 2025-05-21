@@ -31,6 +31,9 @@ public abstract class DetailDataConvert extends Convert {
             Matcher matcher = getPattern().matcher(obj.getName());
             if (matcher.matches()) {
                 String group = getKeyFromGroup(matcher);
+                if (group == null) {
+                    continue;
+                }
                 groupMap.computeIfAbsent(group, k -> new ArrayList<>()).add(obj);
             }
         }

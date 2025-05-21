@@ -12,8 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class SteamDetailDataConvert extends DetailDataConvert {
-    private final Pattern pattern = Pattern.compile("^(" + getDetailDataEnum().getFORWARD_TOTAL() + "|"
-        + getDetailDataEnum().getREVERSE_TOTAL() + "|" + getDetailDataEnum().getMOMENT() + ")(\\d+)$");
+    private final String VALUE_TYPES = getDetailDataEnum().getFORWARD_TOTAL() + "|"
+        + getDetailDataEnum().getREVERSE_TOTAL() + "|" + getDetailDataEnum().getMOMENT();
+
+    private final Pattern pattern = Pattern.compile("^(.+?)\\s+(" + VALUE_TYPES + ")+$");
 
     private final Pattern numberPattern = Pattern.compile("-?\\d+");
 
@@ -29,8 +31,11 @@ public class SteamDetailDataConvert extends DetailDataConvert {
 
     @Override
     String getKeyFromGroup(Matcher matcher) {
-        // todo test
         // 从CH1 中提取出数字
-        return pattern.matcher(matcher.group(1)).group();
+        Matcher numMatcher = numberPattern.matcher(matcher.group(1));
+        if (numMatcher.find()) {
+            return numMatcher.group();
+        }
+        return null;
     }
 }
