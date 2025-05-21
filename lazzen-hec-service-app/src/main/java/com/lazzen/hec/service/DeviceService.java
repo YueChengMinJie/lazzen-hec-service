@@ -78,8 +78,7 @@ public class DeviceService {
     }
 
     public Page<CategoryEnergyData> historyCategoryEnergy(DataQueryForm form, String categoryType) {
-        // String sn = smartManagementRepository.assertSnByDomainCode(form.getDomainCode());
-        String sn = "123";
+        String sn = smartManagementRepository.assertSnByDomainCode(form.getDomainCode());
         Page<CategoryEnergy> categoryEnergyPage = storeRepository.pageCategory(form, categoryType, sn);
         List<CategoryEnergyData> convert = CategoryConvert.convert(categoryEnergyPage.getRecords());
         Page<CategoryEnergyData> map = mapperFacade.map(categoryEnergyPage, Page.class);

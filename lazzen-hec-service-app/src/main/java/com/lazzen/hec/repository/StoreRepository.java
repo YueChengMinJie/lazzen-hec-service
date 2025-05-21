@@ -54,7 +54,7 @@ public class StoreRepository {
             .eq(CategoryEnergy::getCategory, categoryType)
             .eq(CategoryEnergy::getSn, sn)
             .eq(!StringUtils.isNullOrEmpty(form.getPointCode()), CategoryEnergy::getCode, form.getPointCode());
-        // todo getDateIndex 真实是什么样的 到底是时间戳还是ymd
+        // todo gzp getDateIndex 真实是什么样的 到底是时间戳还是ymd
         if (form.getStartDate() != null) {
             queryWrapper.and(wrapper -> wrapper.ge(CategoryEnergy::getDateIndex, form.getStartDate().getDayOfMonth())
                 .or()

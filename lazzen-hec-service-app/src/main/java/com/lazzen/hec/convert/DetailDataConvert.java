@@ -42,7 +42,7 @@ public abstract class DetailDataConvert extends Convert {
             CurrentDetailData data = new CurrentDetailData();
             data.setName(getDetailDataEnum().getNAME_PREFIX() + key);
             setValue(data, groupMap.get(key));
-            // todo 设置仪表状态
+            // todo gzp 设置仪表状态
             // data.setLink();
             result.add(data);
         }

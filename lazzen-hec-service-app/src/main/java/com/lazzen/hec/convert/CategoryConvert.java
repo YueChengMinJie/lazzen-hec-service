@@ -21,7 +21,7 @@ public class CategoryConvert extends Convert {
         }
         CategoryEnergyData data = new CategoryEnergyData();
         try {
-            // todo 确认如何转换时间
+            // todo gzp 确认如何转换时间
             String formattedDateTime = String.format("%d-%02d-%02d %02d:00:00", LocalDateTime.now().getYear(),
                 LocalDateTime.now().getMonthValue(), energy.getDateIndex(),
                 Integer.parseInt(energy.getHourIndex().trim()));
