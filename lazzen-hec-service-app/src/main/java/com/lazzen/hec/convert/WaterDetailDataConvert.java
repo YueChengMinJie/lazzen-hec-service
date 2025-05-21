@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 import com.lazzen.hec.enumeration.DetailDataEnum;
+import com.sipa.boot.java8.common.constants.SipaBootCommonConstants;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +31,6 @@ public class WaterDetailDataConvert extends DetailDataConvert {
     @Override
     String getKeyFromGroup(Matcher matcher) {
         // 提取 <反向总量1>的数字
-        return matcher.group(2);
+        return matcher.group(SipaBootCommonConstants.Number.INT_2);
     }
 }

@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 import com.lazzen.hec.enumeration.DetailDataEnum;
+import com.sipa.boot.java8.common.constants.SipaBootCommonConstants;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +33,7 @@ public class SteamDetailDataConvert extends DetailDataConvert {
     @Override
     String getKeyFromGroup(Matcher matcher) {
         // 从CH1 中提取出数字
-        Matcher numMatcher = numberPattern.matcher(matcher.group(1));
+        Matcher numMatcher = numberPattern.matcher(matcher.group(SipaBootCommonConstants.Number.INT_1));
         if (numMatcher.find()) {
             return numMatcher.group();
         }
