@@ -84,6 +84,7 @@ public class DeviceController {
     @PostMapping("/chart/steam")
     @Operation(summary = "气能耗图表")
     public ResponseWrapper<List<ChartData>> chartSteam(ChartQueryEnum form) {
+        // @zxj 文档上有留言看下
         return ResponseWrapper.successOf(deviceService.chart(form, BusinessConstants.Steam.CATEGORY));
     }
 }
