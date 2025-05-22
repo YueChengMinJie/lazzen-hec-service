@@ -8,6 +8,8 @@ public interface BusinessConstants {
      * 水中控
      */
     interface Water {
+        String CATEGORY = "water";
+
         String SYB = "SYB";
 
         String NAME_PREFIX = "水仪表";
@@ -23,6 +25,8 @@ public interface BusinessConstants {
      * 蒸汽记录仪
      */
     interface Steam {
+        String CATEGORY = "steam";
+
         String QYB = "QYB";
 
         String NAME_PREFIX = "气仪表";

@@ -19,6 +19,7 @@ public class CategoryConvert extends Convert {
         if (energy == null) {
             return null;
         }
+        // 分析数据转换
         CategoryEnergyData data = new CategoryEnergyData();
         try {
             // todo gzp 确认如何转换时间

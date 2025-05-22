@@ -12,8 +12,10 @@ import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.convert.SteamDetailDataConvert;
 import com.lazzen.hec.convert.WaterDetailDataConvert;
 import com.lazzen.hec.dto.CategoryEnergyData;
+import com.lazzen.hec.dto.ChartData;
 import com.lazzen.hec.dto.CurrentDetailData;
 import com.lazzen.hec.dto.DeviceCurrentData;
+import com.lazzen.hec.enumeration.ChartQueryEnum;
 import com.lazzen.hec.form.CurrentSteamForm;
 import com.lazzen.hec.form.CurrentWaterForm;
 import com.lazzen.hec.form.DataQueryForm;
@@ -71,5 +73,17 @@ public class DeviceController {
     public ResponseWrapper<Page<CategoryEnergyData>> historySteam(@Valid @RequestBody DataQueryForm form) {
         return ResponseWrapper
             .successOf(deviceService.historyCategoryEnergy(form, BusinessConstants.Electronic.CATEGORY));
+    }
+
+    @PostMapping("/chart/water")
+    @Operation(summary = "水能耗图表")
+    public ResponseWrapper<List<ChartData>> chartWater(ChartQueryEnum form) {
+        return ResponseWrapper.successOf(deviceService.chart(form, BusinessConstants.Water.CATEGORY));
+    }
+
+    @PostMapping("/chart/steam")
+    @Operation(summary = "气能耗图表")
+    public ResponseWrapper<List<ChartData>> chartSteam(ChartQueryEnum form) {
+        return ResponseWrapper.successOf(deviceService.chart(form, BusinessConstants.Steam.CATEGORY));
     }
 }

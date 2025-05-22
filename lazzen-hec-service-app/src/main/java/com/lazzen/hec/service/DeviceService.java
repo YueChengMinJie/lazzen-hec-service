@@ -10,8 +10,10 @@ import com.lazzen.hec.convert.CategoryConvert;
 import com.lazzen.hec.convert.DetailDataConvert;
 import com.lazzen.hec.convert.DeviceDetailDataConvert;
 import com.lazzen.hec.dto.CategoryEnergyData;
+import com.lazzen.hec.dto.ChartData;
 import com.lazzen.hec.dto.CurrentDetailData;
 import com.lazzen.hec.dto.DeviceCurrentData;
+import com.lazzen.hec.enumeration.ChartQueryEnum;
 import com.lazzen.hec.form.DataQueryForm;
 import com.lazzen.hec.form.DetailForm;
 import com.lazzen.hec.po.CategoryEnergy;
@@ -84,5 +86,20 @@ public class DeviceService {
         Page<CategoryEnergyData> map = mapperFacade.map(categoryEnergyPage, Page.class);
         map.setRecords(convert);
         return map;
+    }
+
+    public List<ChartData> chart(ChartQueryEnum form, String category) {
+        switch (form) {
+            case DAY:
+                break;
+            case WEEK:
+                // 本周
+                break;
+            case MONTH:
+                break;
+            case YEAR:
+                break;
+        }
+        return null;
     }
 }
