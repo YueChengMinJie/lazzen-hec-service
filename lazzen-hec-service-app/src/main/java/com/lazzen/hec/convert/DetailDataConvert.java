@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.dto.CurrentDetailData;
 import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.po.DevicePointData;
@@ -43,8 +44,6 @@ public abstract class DetailDataConvert extends Convert {
             data.setId(key);
             data.setName(getDetailDataEnum().getNAME_PREFIX() + key);
             setValue(data, groupMap.get(key));
-            // todo gzp 设置仪表状态
-            // data.setLink();
             result.add(data);
         }
         return result;
@@ -59,6 +58,9 @@ public abstract class DetailDataConvert extends Convert {
                 data.setValue(e.getValue());
                 // 点位code
                 data.setMomentPointCode(e.getCode());
+                if (e.getDeviceTime() != null && !data.isLink()) {
+                    data.setLink((System.currentTimeMillis() - e.getDeviceTime()) < BusinessConstants.LINK_OFF_LIMIT);
+                }
             });
         // 总流量
         Optional<DevicePointData> forward = threeInOne.stream()
@@ -71,6 +73,10 @@ public abstract class DetailDataConvert extends Convert {
         if (forward.isPresent()) {
             // 点位code
             data.setForwardPointCode(forward.get().getCode());
+            if (forward.get().getDeviceTime() != null && !data.isLink()) {
+                data.setLink(
+                    (System.currentTimeMillis() - forward.get().getDeviceTime()) < BusinessConstants.LINK_OFF_LIMIT);
+            }
             if (reverse.isPresent()) {
                 try {
                     BigDecimal num1 = NumberUtil.toBigDecimal(forward.get().getValue());
@@ -78,6 +84,10 @@ public abstract class DetailDataConvert extends Convert {
                     data.setTotalValue(NumberUtil.sub(num1, num2).toString());
                     // 点位code
                     data.setReversePointCode(reverse.get().getCode());
+                    if (reverse.get().getDeviceTime() != null && !data.isLink()) {
+                        data.setLink((System.currentTimeMillis()
+                            - reverse.get().getDeviceTime()) < BusinessConstants.LINK_OFF_LIMIT);
+                    }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                     log.error("forward:{}", forward.get().getValue());

@@ -1,6 +1,7 @@
 package com.lazzen.hec.convert;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -15,17 +16,20 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CategoryConvert extends Convert {
+    public static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
     public static CategoryEnergyData convert(CategoryEnergy energy) {
         if (energy == null) {
             return null;
         }
         // 分析数据转换
         CategoryEnergyData data = new CategoryEnergyData();
+        data.setId(energy.getId());
         try {
-            // todo gzp 确认如何转换时间
-            String formattedDateTime = String.format("%d-%02d-%02d %02d:00:00", LocalDateTime.now().getYear(),
-                LocalDateTime.now().getMonthValue(), energy.getDateIndex(),
-                Integer.parseInt(energy.getHourIndex().trim()));
+            LocalDate date = LocalDate.parse(String.valueOf(energy.getDateIndex()), dateFormatter);
+
+            String formattedDateTime = String.format("%d-%02d-%02d %02d:00:00", date.getYear(), date.getMonthValue(),
+                date.getDayOfMonth(), Integer.parseInt(energy.getHourIndex().trim()));
             data.setDate(formattedDateTime);
         } catch (Exception e) {
             data.setDate(energy.getDateIndex() + "-" + energy.getHourIndex());

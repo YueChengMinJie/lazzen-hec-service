@@ -1,7 +1,9 @@
 package com.lazzen.hec.web;
 
+import java.io.IOException;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -78,8 +80,9 @@ public class DeviceController {
 
     @PostMapping("/history/analysis/export")
     @Operation(summary = "导出分析数据")
-    public void historySteamExport(@Valid @RequestBody DataQueryForm form) {
-        // todo
+    public void historySteamExport(@Valid @RequestBody DataQueryForm form, HttpServletResponse response)
+        throws IOException {
+        deviceService.historyCategoryEnergyExport(response, form, BusinessConstants.Electronic.CATEGORY);
     }
 
     @PostMapping("/chart/water")

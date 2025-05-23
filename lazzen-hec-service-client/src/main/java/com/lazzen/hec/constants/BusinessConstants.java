@@ -4,6 +4,8 @@ package com.lazzen.hec.constants;
  * 先叫这个名字,多了在分
  */
 public interface BusinessConstants {
+    Long LINK_OFF_LIMIT = 30 * 60L;
+
     /**
      * 水中控
      */

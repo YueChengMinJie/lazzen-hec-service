@@ -1,13 +1,19 @@
 package com.lazzen.hec.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lazzen.hec.convert.CategoryConvert;
+import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.form.DataQueryForm;
 import com.lazzen.hec.mapper.*;
 import com.lazzen.hec.po.CategoryEnergy;
@@ -16,6 +22,7 @@ import com.lazzen.hec.po.DevicePointData;
 import com.sipa.boot.java8.common.utils.StringUtils;
 import com.sipa.boot.java8.data.mysql.constants.SipaBootMysqlConstants;
 
+import cn.hutool.core.util.NumberUtil;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -50,20 +57,51 @@ public class StoreRepository {
     }
 
     public Page<CategoryEnergy> pageCategory(DataQueryForm form, String categoryType, String sn) {
+        Page<CategoryEnergy> forWard = pageCategory(form, form.getForwardPointCode(), categoryType, sn);
+        if (form.getDataEnum() == DetailDataEnum.WATER && !StringUtils.isNullOrEmpty(form.getReversePointCode())
+            && CollectionUtils.isNotEmpty(forWard.getRecords())) {
+            // 水 减去反向流量
+            Page<CategoryEnergy> reverse = pageCategory(form, form.getReversePointCode(), categoryType, sn);
+            if (CollectionUtils.isNotEmpty(reverse.getRecords())) {
+                Map<String, String> reverseMap = reverse.getRecords()
+                    .stream()
+                    .collect(
+                        Collectors.toMap(e -> e.getDateIndex() + e.getHourIndex(), CategoryEnergy::getRelaTimeValue));
+                for (CategoryEnergy record : forWard.getRecords()) {
+                    String reverseValue = reverseMap.get(record.getDateIndex() + record.getHourIndex());
+                    if (StringUtils.isNullOrEmpty(reverseValue)) {
+                        continue;
+                    }
+                    BigDecimal num1 = NumberUtil.toBigDecimal(record.getRelaTimeValue());
+                    BigDecimal num2 = NumberUtil.toBigDecimal(reverseValue).abs();
+                    record.setRelaTimeValue(NumberUtil.sub(num1, num2).toString());
+                }
+            }
+        }
+        return forWard;
+    }
+
+    private Page<CategoryEnergy> pageCategory(DataQueryForm form, String pointCode, String categoryType, String sn) {
         LambdaQueryWrapper<CategoryEnergy> queryWrapper = Wrappers.<CategoryEnergy>lambdaQuery()
             .eq(CategoryEnergy::getCategory, categoryType)
-            .eq(CategoryEnergy::getSn, sn);
-        // todo gzp getDateIndex 真实是什么样的 到底是时间戳还是ymd
+            .eq(CategoryEnergy::getCode, pointCode)
+            .eq(CategoryEnergy::getSn, sn)
+            .orderByDesc(CategoryEnergy::getDateIndex)
+            .orderByDesc(CategoryEnergy::getHourIndex);
         if (form.getStartDate() != null) {
-            queryWrapper.and(wrapper -> wrapper.ge(CategoryEnergy::getDateIndex, form.getStartDate().getDayOfMonth())
+            String formattedDate = form.getStartDate().format(CategoryConvert.dateFormatter); // "20250523"
+            int dateNumber = Integer.parseInt(formattedDate);
+            queryWrapper.and(wrapper -> wrapper.ge(CategoryEnergy::getDateIndex, dateNumber)
                 .or()
-                .gt(CategoryEnergy::getDateIndex, form.getStartDate().getDayOfMonth())
+                .gt(CategoryEnergy::getDateIndex, dateNumber)
                 .and(i -> i.ge(CategoryEnergy::getHourIndex, form.getStartDate().getHour())));
         }
         if (form.getEndDate() != null) {
-            queryWrapper.and(wrapper -> wrapper.le(CategoryEnergy::getDateIndex, form.getEndDate().getDayOfMonth())
+            String formattedDate = form.getEndDate().format(CategoryConvert.dateFormatter); // "20250523"
+            int dateNumber = Integer.parseInt(formattedDate);
+            queryWrapper.and(wrapper -> wrapper.le(CategoryEnergy::getDateIndex, dateNumber)
                 .or()
-                .lt(CategoryEnergy::getDateIndex, form.getEndDate().getDayOfMonth())
+                .lt(CategoryEnergy::getDateIndex, dateNumber)
                 .and(i -> i.le(CategoryEnergy::getHourIndex, form.getEndDate().getHour())));
         }
         return categoryEnergyMapper.selectPage(Page.of(form.getPage(), form.getSize()), queryWrapper);
