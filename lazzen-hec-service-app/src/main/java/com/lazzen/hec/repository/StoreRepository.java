@@ -52,8 +52,7 @@ public class StoreRepository {
     public Page<CategoryEnergy> pageCategory(DataQueryForm form, String categoryType, String sn) {
         LambdaQueryWrapper<CategoryEnergy> queryWrapper = Wrappers.<CategoryEnergy>lambdaQuery()
             .eq(CategoryEnergy::getCategory, categoryType)
-            .eq(CategoryEnergy::getSn, sn)
-            .eq(!StringUtils.isNullOrEmpty(form.getPointCode()), CategoryEnergy::getCode, form.getPointCode());
+            .eq(CategoryEnergy::getSn, sn);
         // todo gzp getDateIndex 真实是什么样的 到底是时间戳还是ymd
         if (form.getStartDate() != null) {
             queryWrapper.and(wrapper -> wrapper.ge(CategoryEnergy::getDateIndex, form.getStartDate().getDayOfMonth())

@@ -76,6 +76,12 @@ public class DeviceController {
             .successOf(deviceService.historyCategoryEnergy(form, BusinessConstants.Electronic.CATEGORY));
     }
 
+    @PostMapping("/history/analysis/export")
+    @Operation(summary = "导出分析数据")
+    public void historySteamExport(@Valid @RequestBody DataQueryForm form) {
+        // todo
+    }
+
     @PostMapping("/chart/water")
     @Operation(summary = "水能耗图表")
     public ResponseWrapper<List<ChartData>> chartWater(ChartQueryEnum form) {
