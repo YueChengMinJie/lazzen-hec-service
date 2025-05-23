@@ -117,8 +117,8 @@ public class DeviceService {
         throws IOException {
         Page<CategoryEnergyData> categoryEnergyDataPage = historyCategoryEnergy(form, categoryType);
 
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=" + getFileName(form));
+        response.setContentType(BusinessConstants.EXCEL_EXPORT_CONTENT_TYPE);
+        response.setHeader(BusinessConstants.CONTENT_DISPOSITION, "attachment; filename=" + getFileName(form));
 
         if (form.getDataEnum() == DetailDataEnum.WATER) {
             List<CategoryEnergyWaterExport> list =

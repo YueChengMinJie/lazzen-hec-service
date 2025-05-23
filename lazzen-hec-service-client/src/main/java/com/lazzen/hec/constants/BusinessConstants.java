@@ -6,6 +6,10 @@ package com.lazzen.hec.constants;
 public interface BusinessConstants {
     Long LINK_OFF_LIMIT = 30 * 60L;
 
+    String EXCEL_EXPORT_CONTENT_TYPE = "application/vnd.ms-excel";
+
+    String CONTENT_DISPOSITION = "Content-Disposition";
+
     /**
      * 水中控
      */
