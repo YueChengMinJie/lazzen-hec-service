@@ -12,7 +12,7 @@ public class DeviceDetailDataConvert extends Convert {
     }
 
     public static Boolean convertOnline(DeviceOnlineStatus statusBySn) {
-        if (statusBySn.getLink() != null && statusBySn.getLink().getValue() != null) {
+        if (statusBySn != null && statusBySn.getLink() != null && statusBySn.getLink().getValue() != null) {
             return statusBySn.getLink().getValue() == 1;
         }
         return false;

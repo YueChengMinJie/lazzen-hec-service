@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CurrentDetailData {
+    private String id;
+
     @Schema(description = "水仪表名字 ->水仪表1  蒸汽仪表名字->气仪表1")
     private String name;
 

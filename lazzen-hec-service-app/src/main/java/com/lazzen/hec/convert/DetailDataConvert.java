@@ -40,6 +40,7 @@ public abstract class DetailDataConvert extends Convert {
         List<CurrentDetailData> result = new ArrayList<>();
         for (String key : groupMap.keySet()) {
             CurrentDetailData data = new CurrentDetailData();
+            data.setId(key);
             data.setName(getDetailDataEnum().getNAME_PREFIX() + key);
             setValue(data, groupMap.get(key));
             // todo gzp 设置仪表状态

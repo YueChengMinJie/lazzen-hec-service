@@ -48,9 +48,10 @@ public class DeviceController {
     }
 
     @GetMapping("/current/data")
-    @Operation(summary = "获取指定domain,deviceType(可空)实时数据")
-    public ResponseWrapper<List<DeviceCurrentData>>
-        immediatelyData(@Valid @NotNull(message = "缺少domainCode") String domainCode, String deviceType) {
+    @Operation(summary = "获取指定domain, deviceType实时数据")
+    public ResponseWrapper<List<DeviceCurrentData>> immediatelyData(
+        @Valid @NotNull(message = "缺少domainCode") String domainCode,
+        @Valid @NotNull(message = "缺少deviceType") String deviceType) {
         return ResponseWrapper.successOf(deviceService.getImmediatelyBySn(domainCode, deviceType));
     }
 
