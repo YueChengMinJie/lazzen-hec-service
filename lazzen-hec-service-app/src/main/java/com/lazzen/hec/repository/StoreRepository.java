@@ -3,6 +3,7 @@ package com.lazzen.hec.repository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -56,7 +57,19 @@ public class StoreRepository {
             .last(SipaBootMysqlConstants.LIMIT_ONE));
     }
 
-    public Page<CategoryEnergy> pageCategory(DataQueryForm form, String categoryType, String sn) {
+    public List<CategoryEnergy> categoryEnergyList(Integer startDateIndex, Integer endDateIndex, String sn,
+        Set<String> codeSet) {
+        LambdaQueryWrapper<CategoryEnergy> queryWrapper = Wrappers.<CategoryEnergy>lambdaQuery()
+            .ge(CategoryEnergy::getDateIndex, startDateIndex)
+            .le(CategoryEnergy::getDateIndex, endDateIndex)
+            .eq(CategoryEnergy::getSn, sn)
+            .eq(CollectionUtils.isNotEmpty(codeSet), CategoryEnergy::getCode, codeSet)
+            .orderByDesc(CategoryEnergy::getDateIndex)
+            .orderByDesc(CategoryEnergy::getHourIndex);
+        return categoryEnergyMapper.selectList(queryWrapper);
+    }
+
+    public Page<CategoryEnergy> pageCategoryTotal(DataQueryForm form, String categoryType, String sn) {
         Page<CategoryEnergy> forWard = pageCategory(form, form.getForwardPointCode(), categoryType, sn);
         if (form.getDataEnum() == DetailDataEnum.WATER && !StringUtils.isNullOrEmpty(form.getReversePointCode())
             && CollectionUtils.isNotEmpty(forWard.getRecords())) {

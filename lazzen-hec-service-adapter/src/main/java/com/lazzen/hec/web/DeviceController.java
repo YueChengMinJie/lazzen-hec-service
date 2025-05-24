@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lazzen.hec.constants.BusinessConstants;
-import com.lazzen.hec.convert.SteamDetailDataConvert;
-import com.lazzen.hec.convert.WaterDetailDataConvert;
 import com.lazzen.hec.dto.CategoryEnergyData;
 import com.lazzen.hec.dto.ChartData;
 import com.lazzen.hec.dto.CurrentDetailData;
 import com.lazzen.hec.dto.DeviceCurrentData;
-import com.lazzen.hec.enumeration.ChartQueryEnum;
+import com.lazzen.hec.enumeration.DetailDataEnum;
+import com.lazzen.hec.form.ChartForm;
 import com.lazzen.hec.form.CurrentSteamForm;
 import com.lazzen.hec.form.CurrentWaterForm;
 import com.lazzen.hec.form.DataQueryForm;
@@ -39,10 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DeviceController {
     private final DeviceService deviceService;
 
-    private final WaterDetailDataConvert waterConvert;
-
-    private final SteamDetailDataConvert steamConvert;
-
     @GetMapping("/status")
     @Operation(summary = "获取设备状态")
     public ResponseWrapper<Boolean> data(String domainCode) {
@@ -60,15 +55,13 @@ public class DeviceController {
     @PostMapping("/current/water")
     @Operation(summary = "水系统中控屏")
     public ResponseWrapper<List<CurrentDetailData>> currentWater(@Valid @RequestBody CurrentWaterForm form) {
-        return ResponseWrapper
-            .successOf(deviceService.currentDetailData(form, waterConvert, BusinessConstants.Water.SYB));
+        return ResponseWrapper.successOf(deviceService.currentDetailData(form, DetailDataEnum.WATER));
     }
 
     @PostMapping("/current/steam")
     @Operation(summary = "蒸汽记录仪")
     public ResponseWrapper<List<CurrentDetailData>> currentSteam(@Valid @RequestBody CurrentSteamForm form) {
-        return ResponseWrapper
-            .successOf(deviceService.currentDetailData(form, steamConvert, BusinessConstants.Steam.QYB));
+        return ResponseWrapper.successOf(deviceService.currentDetailData(form, DetailDataEnum.STEAM));
     }
 
     @PostMapping("/history/analysis")
@@ -85,15 +78,9 @@ public class DeviceController {
         deviceService.historyCategoryEnergyExport(response, form, BusinessConstants.Electronic.CATEGORY);
     }
 
-    @PostMapping("/chart/water")
-    @Operation(summary = "水能耗图表")
-    public ResponseWrapper<List<ChartData>> chartWater(ChartQueryEnum form) {
-        return ResponseWrapper.successOf(deviceService.chart(form, BusinessConstants.Water.CATEGORY));
-    }
-
-    @PostMapping("/chart/steam")
-    @Operation(summary = "气能耗图表")
-    public ResponseWrapper<List<ChartData>> chartSteam(ChartQueryEnum form) {
-        return ResponseWrapper.successOf(deviceService.chart(form, BusinessConstants.Steam.CATEGORY));
+    @PostMapping("/chart")
+    @Operation(summary = "能耗图表")
+    public ResponseWrapper<List<ChartData>> chartWater(@Valid @RequestBody ChartForm form) {
+        return ResponseWrapper.successOf(deviceService.chart(form));
     }
 }
