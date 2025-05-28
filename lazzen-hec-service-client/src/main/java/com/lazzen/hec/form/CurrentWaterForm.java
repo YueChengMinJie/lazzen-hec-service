@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class CurrentWaterForm implements DetailForm{
+public class CurrentWaterForm implements DetailForm {
     @Schema(description = "水仪表设备状态")
     private Boolean link;
 

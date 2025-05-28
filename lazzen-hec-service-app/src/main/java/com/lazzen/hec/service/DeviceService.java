@@ -157,15 +157,14 @@ public class DeviceService {
         Set<String> rCode = new HashSet<>();
         Set<String> mCode = new HashSet<>();
         pointCodesBySN(form, fCode, rCode, mCode);
-        // todo gzp
         switch (form.getQueryEnum()) {
             case DAY:
                 List<ChartData> result = getDayChartData(sn, fCode, rCode, mCode);
-                if (result == null)
+                if (result == null) {
                     break;
+                }
                 return result;
             case WEEK:
-                // 本周
                 break;
             case MONTH:
                 break;

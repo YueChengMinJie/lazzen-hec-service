@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class CurrentSteamForm implements DetailForm{
+public class CurrentSteamForm implements DetailForm {
     @Schema(description = "设备状态")
     private Boolean link;
 

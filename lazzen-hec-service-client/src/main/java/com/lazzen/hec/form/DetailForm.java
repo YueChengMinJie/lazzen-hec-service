@@ -1,11 +1,9 @@
 package com.lazzen.hec.form;
 
-
 public interface DetailForm {
+    Boolean getLink();
 
-    Boolean getLink() ;
-
-    String getDeviceName() ;
+    String getDeviceName();
 
     String getDomainCode();
 }
