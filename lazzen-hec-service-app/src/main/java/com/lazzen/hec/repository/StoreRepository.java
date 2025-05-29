@@ -5,6 +5,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -348,15 +350,16 @@ public class StoreRepository {
     }
 
     private List<String> getCodeList(DetailDataEnum dataType, List<DevicePointData> devicePointData) {
-        return devicePointData.stream().map(DevicePointData::getCode).filter(code -> {
+        return devicePointData.stream().filter(dpd -> {
+            String name = dpd.getName();
             if (dataType == DetailDataEnum.WATER) {
-                return code.startsWith(dataType.getForwardTotal()) || code.startsWith(dataType.getReverseTotal());
+                return name.startsWith(dataType.getForwardTotal()) || name.startsWith(dataType.getReverseTotal());
             } else if (dataType == DetailDataEnum.STEAM) {
-                return code.startsWith(dataType.getForwardTotal());
+                return name.endsWith(dataType.getForwardTotal());
             } else {
                 return false;
             }
-        }).distinct().collect(Collectors.toList());
+        }).map(DevicePointData::getCode).distinct().collect(Collectors.toList());
     }
 
     private static List<String> getSnList(List<DevicePointData> devicePointData) {
@@ -554,15 +557,25 @@ public class StoreRepository {
         return null;
     }
 
-    private static Map<String, String> getCodeNameMap(List<DevicePointData> devicePointData, DetailDataEnum dataType) {
+    private Map<String, String> getCodeNameMap(List<DevicePointData> devicePointData, DetailDataEnum dataType) {
+        Pattern numberPattern = Pattern.compile("\\d+");
         return devicePointData.stream().collect(Collectors.toMap(DevicePointData::getCode, dpd -> {
             String dpdName = dpd.getName();
+            String key = getKey(dpdName, numberPattern);
             if (dataType == DetailDataEnum.WATER && dpdName.equals(dataType.getForwardTotal())) {
-                return dpdName.replace(dataType.getForwardTotal(), dataType.getNamePrefix());
+                return dataType.getNamePrefix() + key;
             } else if (dataType == DetailDataEnum.STEAM) {
-                return dpdName.replace(dataType.getForwardTotal(), dataType.getNamePrefix());
+                return dataType.getNamePrefix() + key;
             }
             return StringUtils.EMPTY;
         }, (s, s2) -> s2));
+    }
+
+    private String getKey(String dpdName, Pattern numberPattern) {
+        Matcher numMatcher = numberPattern.matcher(dpdName);
+        if (numMatcher.find()) {
+            return numMatcher.group().trim();
+        }
+        return StringUtils.EMPTY;
     }
 }
