@@ -14,6 +14,8 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lazzen.hec.convert.CategoryConvert;
+import com.lazzen.hec.dto.CategoryEnergyData;
+import com.lazzen.hec.enumeration.ChartQueryEnum;
 import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.form.DataQueryForm;
 import com.lazzen.hec.mapper.*;
@@ -118,5 +120,13 @@ public class StoreRepository {
                 .and(i -> i.le(CategoryEnergy::getHourIndex, form.getEndDate().getHour())));
         }
         return categoryEnergyMapper.selectPage(Page.of(form.getPage(), form.getSize()), queryWrapper);
+    }
+
+    public List<String> querySnFromPointData(DetailDataEnum dataType) {
+        return null;
+    }
+
+    public List<CategoryEnergyData> queryDataBySn(List<String> snLList, ChartQueryEnum dateType) {
+        return null;
     }
 }

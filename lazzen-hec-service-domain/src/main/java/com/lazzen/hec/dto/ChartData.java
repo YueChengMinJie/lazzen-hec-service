@@ -1,5 +1,7 @@
 package com.lazzen.hec.dto;
 
+import java.math.BigDecimal;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -9,11 +11,11 @@ public class ChartData {
     private String xName;
 
     @Schema(description = "耗电量")
-    private String value;
+    private BigDecimal value;
 
     @Schema(description = "环比 分子")
-    private String qoq;
+    private BigDecimal qoq;
 
     @Schema(description = "同比 分子")
-    private String yoy;
+    private BigDecimal yoy;
 }

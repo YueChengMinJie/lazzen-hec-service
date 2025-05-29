@@ -3,11 +3,13 @@ package com.lazzen.hec.service;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,6 +18,7 @@ import com.lazzen.hec.convert.*;
 import com.lazzen.hec.dto.*;
 import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.form.ChartForm;
+import com.lazzen.hec.form.ChartTopForm;
 import com.lazzen.hec.form.DataQueryForm;
 import com.lazzen.hec.form.DetailForm;
 import com.lazzen.hec.po.CategoryEnergy;
@@ -184,6 +187,36 @@ public class DeviceService {
     }
 
     public List<ChartData> chart(ChartForm form) {
-        return null;
+        List<String> snLList = storeRepository.querySnFromPointData(form.getDataType());
+        List<ChartData> chartDataList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(snLList)) {
+            List<CategoryEnergyData> data = storeRepository.queryDataBySn(snLList, form.getDateType());
+            if (CollectionUtils.isNotEmpty(data)) {
+                chartDataList.addAll(agg(data));
+            }
+        }
+        return chartDataList;
+    }
+
+    private List<ChartData> agg(List<CategoryEnergyData> data) {
+        List<ChartData> chartData = new ArrayList<>();
+        return chartData;
+    }
+
+    public List<ChartTopData> chartTop(ChartTopForm form) {
+        List<String> snLList = storeRepository.querySnFromPointData(form.getDataType());
+        List<ChartTopData> chartDataList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(snLList)) {
+            List<CategoryEnergyData> data = storeRepository.queryDataBySn(snLList, form.getDateType());
+            if (CollectionUtils.isNotEmpty(data)) {
+                chartDataList.addAll(top(data));
+            }
+        }
+        return chartDataList;
+    }
+
+    private List<ChartTopData> top(List<CategoryEnergyData> data) {
+        List<ChartTopData> chartTopData = new ArrayList<>();
+        return chartTopData;
     }
 }

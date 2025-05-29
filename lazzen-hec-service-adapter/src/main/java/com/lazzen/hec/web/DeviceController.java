@@ -11,15 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lazzen.hec.constants.BusinessConstants;
-import com.lazzen.hec.dto.CategoryEnergyData;
-import com.lazzen.hec.dto.ChartData;
-import com.lazzen.hec.dto.CurrentDetailData;
-import com.lazzen.hec.dto.DeviceCurrentData;
+import com.lazzen.hec.dto.*;
 import com.lazzen.hec.enumeration.DetailDataEnum;
-import com.lazzen.hec.form.ChartForm;
-import com.lazzen.hec.form.CurrentSteamForm;
-import com.lazzen.hec.form.CurrentWaterForm;
-import com.lazzen.hec.form.DataQueryForm;
+import com.lazzen.hec.form.*;
 import com.lazzen.hec.service.DeviceService;
 import com.sipa.boot.java8.common.dtos.ResponseWrapper;
 
@@ -82,5 +76,11 @@ public class DeviceController {
     @Operation(summary = "能耗图表")
     public ResponseWrapper<List<ChartData>> chartWater(@Valid @RequestBody ChartForm form) {
         return ResponseWrapper.successOf(deviceService.chart(form));
+    }
+
+    @PostMapping("/top")
+    @Operation(summary = "能耗top")
+    public ResponseWrapper<List<ChartTopData>> chartTop(@Valid @RequestBody ChartTopForm form) {
+        return ResponseWrapper.successOf(deviceService.chartTop(form));
     }
 }
