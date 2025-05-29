@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class SteamDetailDataConvert extends DetailDataConvert {
-    private final String VALUE_TYPES = getDetailDataEnum().getFORWARD_TOTAL() + "|"
-        + getDetailDataEnum().getREVERSE_TOTAL() + "|" + getDetailDataEnum().getMOMENT();
+    private final String VALUE_TYPES = getDetailDataEnum().getForwardTotal() + "|"
+        + getDetailDataEnum().getReverseTotal() + "|" + getDetailDataEnum().getMoment();
 
     private final Pattern pattern = Pattern.compile("^(.+?)\\s+(" + VALUE_TYPES + ")+$");
 

@@ -14,13 +14,13 @@ public enum DetailDataEnum {
 
     ;
 
-    private final String DEVICE_TYPE;
+    private final String deviceType;
 
-    private final String NAME_PREFIX;
+    private final String namePrefix;
 
-    private final String FORWARD_TOTAL;
+    private final String forwardTotal;
 
-    private final String REVERSE_TOTAL;
+    private final String reverseTotal;
 
-    private final String MOMENT;
+    private final String moment;
 }

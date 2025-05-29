@@ -2,6 +2,8 @@ package com.lazzen.hec.po;
 
 import java.util.Date;
 
+import com.lazzen.hec.po.base.ActualityObject;
+
 import lombok.Data;
 
 /**
@@ -10,7 +12,7 @@ import lombok.Data;
  * @TableName category_energy
  */
 @Data
-public class CategoryEnergy {
+public class CategoryEnergy implements ActualityObject {
     /**
      * 
      */

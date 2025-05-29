@@ -42,7 +42,7 @@ public abstract class DetailDataConvert extends Convert {
         for (String key : groupMap.keySet()) {
             CurrentDetailData data = new CurrentDetailData();
             data.setId(key);
-            data.setName(getDetailDataEnum().getNAME_PREFIX() + key);
+            data.setName(getDetailDataEnum().getNamePrefix() + key);
             setValue(data, groupMap.get(key));
             result.add(data);
         }
@@ -52,7 +52,7 @@ public abstract class DetailDataConvert extends Convert {
     private void setValue(CurrentDetailData data, List<DevicePointData> threeInOne) {
         // 瞬时流量
         threeInOne.stream()
-            .filter(e -> e != null && e.getName().contains(getDetailDataEnum().getMOMENT()))
+            .filter(e -> e != null && e.getName().contains(getDetailDataEnum().getMoment()))
             .findFirst()
             .ifPresent(e -> {
                 data.setValue(e.getValue());
@@ -64,10 +64,10 @@ public abstract class DetailDataConvert extends Convert {
             });
         // 总流量
         Optional<DevicePointData> forward = threeInOne.stream()
-            .filter(e -> e != null && e.getName().contains(getDetailDataEnum().getFORWARD_TOTAL()))
+            .filter(e -> e != null && e.getName().contains(getDetailDataEnum().getForwardTotal()))
             .findFirst();
         Optional<DevicePointData> reverse = threeInOne.stream()
-            .filter(e -> e != null && e.getName().contains(getDetailDataEnum().getREVERSE_TOTAL()))
+            .filter(e -> e != null && e.getName().contains(getDetailDataEnum().getReverseTotal()))
             .findFirst();
 
         if (forward.isPresent()) {

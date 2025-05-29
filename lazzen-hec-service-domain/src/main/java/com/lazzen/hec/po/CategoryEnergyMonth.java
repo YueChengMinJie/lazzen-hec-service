@@ -2,13 +2,15 @@ package com.lazzen.hec.po;
 
 import java.util.Date;
 
+import com.lazzen.hec.po.base.ActualityObject;
+
 import lombok.Data;
 
 /**
  * @TableName category_energy_month
  */
 @Data
-public class CategoryEnergyMonth {
+public class CategoryEnergyMonth implements ActualityObject {
     /**
      * 
      */
