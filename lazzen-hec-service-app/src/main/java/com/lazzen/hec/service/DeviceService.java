@@ -2,16 +2,14 @@ package com.lazzen.hec.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.convert.*;
@@ -28,7 +26,6 @@ import com.lazzen.hec.repository.StoreRepository;
 import com.sipa.boot.java8.common.utils.StringUtils;
 
 import cn.hutool.core.util.NumberUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import cn.idev.excel.FastExcel;
 import lombok.RequiredArgsConstructor;
@@ -115,65 +112,6 @@ public class DeviceService {
         return map;
     }
 
-    private void pointCodesBySN(ChartForm form, Set<String> fCode, Set<String> rCode, Set<String> mCode) {
-        // 查出水/气的点位
-        List<CurrentDetailData> currentDetailData = currentDetailData(new DetailForm() {
-            @Override
-            public Boolean getLink() {
-                return null;
-            }
-
-            @Override
-            public String getDeviceName() {
-                return "";
-            }
-
-            @Override
-            public String getDomainCode() {
-                return form.getDomainCode();
-            }
-        }, form.getDataEnum());
-
-        if (CollectionUtils.isEmpty(currentDetailData)) {
-            return;
-        }
-        rCode.addAll(currentDetailData.stream()
-            .map(CurrentDetailData::getReversePointCode)
-            .filter(StrUtil::isNotBlank)
-            .collect(Collectors.toSet()));
-        mCode.addAll(currentDetailData.stream()
-            .map(CurrentDetailData::getMomentPointCode)
-            .filter(StrUtil::isNotBlank)
-            .collect(Collectors.toSet()));
-        fCode.addAll(currentDetailData.stream()
-            .map(CurrentDetailData::getForwardPointCode)
-            .filter(StrUtil::isNotBlank)
-            .collect(Collectors.toSet()));
-    }
-
-    public List<ChartData> chart(ChartForm form) {
-        String sn = smartManagementRepository.assertSnByDomainCode(form.getDomainCode());
-        Set<String> fCode = new HashSet<>();
-        Set<String> rCode = new HashSet<>();
-        Set<String> mCode = new HashSet<>();
-        pointCodesBySN(form, fCode, rCode, mCode);
-        switch (form.getQueryEnum()) {
-            case DAY:
-                List<ChartData> result = getDayChartData(sn, fCode, rCode, mCode);
-                if (result == null) {
-                    break;
-                }
-                return result;
-            case WEEK:
-                break;
-            case MONTH:
-                break;
-            case YEAR:
-                break;
-        }
-        return null;
-    }
-
     public void historyCategoryEnergyExport(HttpServletResponse response, DataQueryForm form, String categoryType)
         throws IOException {
         Page<CategoryEnergyData> categoryEnergyDataPage = historyCategoryEnergy(form, categoryType);
@@ -245,104 +183,7 @@ public class DeviceService {
         }
     }
 
-    /**
-     * @param sn
-     * @param fCode
-     *            正向code
-     * @param rCode
-     *            反向code
-     * @param mCode
-     *            瞬时code
-     * @return
-     */
-    private List<ChartData> getDayChartData(String sn, Set<String> fCode, Set<String> rCode, Set<String> mCode) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
-        LocalDateTime lastYear = LocalDateTime.now().minusYears(1);
-        Set<String> allCode = new HashSet<>();
-        allCode.addAll(fCode);
-        allCode.addAll(rCode);
-        allCode.addAll(mCode);
-
-        String todayStr = now.format(CategoryConvert.dateFormatter); // "20250523"
-        String yesterdayStr = yesterday.format(CategoryConvert.dateFormatter); // "20250523"
-        String lastYearStr = lastYear.format(CategoryConvert.dateFormatter); // "20250523"
-        int todayInt = Integer.parseInt(todayStr);
-        int yesterdayInt = Integer.parseInt(yesterdayStr);
-        int lastYearInt = Integer.parseInt(lastYearStr);
-
-        List<CategoryEnergy> todayAndYesterdayList =
-            storeRepository.categoryEnergyList(todayInt, yesterdayInt, sn, allCode);
-        if (todayAndYesterdayList.isEmpty()) {
-            return null;
-        }
-        List<CategoryEnergy> lastYearList = storeRepository.categoryEnergyList(lastYearInt, lastYearInt, sn, allCode);
-
-        Map<String,
-            List<CategoryEnergy>> yesterdayHourMap = todayAndYesterdayList.stream()
-                .filter(e -> !Objects.equals(e.getDateIndex(), todayInt))
-                .collect(Collectors.groupingBy(CategoryEnergy::getHourIndex));
-
-        Map<String, List<CategoryEnergy>> lastYearHourMap =
-            lastYearList.stream().collect(Collectors.groupingBy(CategoryEnergy::getHourIndex));
-
-        Map<String,
-            List<CategoryEnergy>> hourIndexMap = todayAndYesterdayList.stream()
-                .filter(e -> Objects.equals(e.getDateIndex(), todayInt))
-                .collect(Collectors.groupingBy(CategoryEnergy::getHourIndex));
-
-        List<ChartData> result = new ArrayList<>();
-        for (String hour : hourIndexMap.keySet()) {
-            ChartData cd = new ChartData();
-            result.add(cd);
-            List<CategoryEnergy> todayDataList = hourIndexMap.get(hour);
-            List<CategoryEnergy> lastYearDataList = lastYearHourMap.get(hour);
-            List<CategoryEnergy> yesterdayDataList = yesterdayHourMap.get(hour);
-
-            String[] todayFValue = todayDataList.stream()
-                .filter(e -> mCode.contains(e.getCode()))
-                .map(CategoryEnergy::getRelaTimeValue)
-                .toArray(String[]::new);
-            String[] lastYearFValue = lastYearDataList.stream()
-                .filter(e -> mCode.contains(e.getCode()))
-                .map(CategoryEnergy::getRelaTimeValue)
-                .toArray(String[]::new);
-            String[] yesterdayFValue = yesterdayDataList.stream()
-                .filter(e -> mCode.contains(e.getCode()))
-                .map(CategoryEnergy::getRelaTimeValue)
-                .toArray(String[]::new);
-            if (todayFValue.length == 0) {
-                continue;
-            }
-            BigDecimal todayHourTotal = NumberUtil.add(todayFValue);
-            cd.setValue(todayHourTotal.toString());
-            if (lastYearFValue.length != 0) {
-                BigDecimal lastYearHourTotal = NumberUtil.add(lastYearFValue);
-                cd.setYoy(calculateGrowthRate(todayHourTotal, lastYearHourTotal));
-            }
-            if (yesterdayFValue.length != 0) {
-                BigDecimal yesterdayHourTotal = NumberUtil.add(yesterdayFValue);
-                cd.setQoq(calculateGrowthRate(todayHourTotal, yesterdayHourTotal));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * 增长率计算 26%返回26
-     */
-    public static String calculateGrowthRate(BigDecimal currentValue, BigDecimal previousValue) {
-        // 4. 处理除零情况
-        if (previousValue.compareTo(BigDecimal.ZERO) == 0) {
-            return "N/A";
-        }
-
-        // 5. 计算增长率（(current - previous) / previous * 100）
-        BigDecimal growthRate = currentValue.subtract(previousValue)
-            .divide(previousValue, 4, RoundingMode.HALF_UP) // 保留4位小数
-            .multiply(NumberUtil.toBigDecimal("100"));
-
-        // 6. 去除小数部分（如 26.00 → 26）
-        return NumberUtil.toStr(growthRate.setScale(0, RoundingMode.DOWN));
+    public List<ChartData> chart(ChartForm form) {
+        return null;
     }
 }

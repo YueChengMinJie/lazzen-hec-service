@@ -1,11 +1,14 @@
 package com.lazzen.hec.enumeration;
 
+import com.baomidou.mybatisplus.annotation.IEnum;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum ChartQueryEnum {
+public enum ChartQueryEnum implements IEnum<Integer> {
+    DAY(1), WEEK(2), MONTH(3), QUARTER(4), YEAR(5);
 
-    DAY, WEEK, MONTH, QUARTER, YEAR;
+    private final Integer value;
 }

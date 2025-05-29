@@ -10,11 +10,8 @@ import lombok.Data;
 @Data
 public class ChartForm {
     @NotNull
-    private ChartQueryEnum queryEnum;
+    private ChartQueryEnum dateType;
 
     @NotNull
-    private String domainCode;
-
-    @NotNull
-    private DetailDataEnum dataEnum;
+    private DetailDataEnum dataType;
 }

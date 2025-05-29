@@ -14,8 +14,18 @@
     <!-- 暂时不开发，等接入微服务再开发 -->
     <dependencies>
         <dependency>
-        <groupId>com.sipa.boot.java8</groupId>
-        <artifactId>sipa-boot-swagger-spring-boot-starter</artifactId>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
     </dependencies>
 </project>
