@@ -3,6 +3,7 @@ package com.lazzen.hec.convert;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.lazzen.hec.enumeration.DetailDataEnum;
@@ -13,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class SteamDetailDataConvert extends DetailDataConvert {
+    @Value("${lazzen.hec.gas-limit-time-seconds:300}")
+    private long limitTime;
+
     private final String VALUE_TYPES = getDetailDataEnum().getForwardTotal() + "|"
         + getDetailDataEnum().getReverseTotal() + "|" + getDetailDataEnum().getMoment();
 
@@ -38,5 +42,10 @@ public class SteamDetailDataConvert extends DetailDataConvert {
             return numMatcher.group();
         }
         return null;
+    }
+
+    @Override
+    protected long getLimitTime() {
+        return limitTime * 1000;
     }
 }

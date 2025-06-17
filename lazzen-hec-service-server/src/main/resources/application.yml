@@ -164,3 +164,12 @@ sipa.boot:
           name: ms
           master-data-source-name: master
           slave-data-source-names: slave0
+#
+# -------------------------------------------
+# LAZZEN HEC CONFIGURATION
+# -------------------------------------------
+#
+lazzen:
+  hec:
+    water-limit-time-seconds: 300
+    gas-limit-time-seconds: 300

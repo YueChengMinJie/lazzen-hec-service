@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.dto.CurrentDetailData;
 import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.po.DevicePointData;
@@ -59,7 +58,7 @@ public abstract class DetailDataConvert extends Convert {
                 // 点位code
                 data.setMomentPointCode(e.getCode());
                 if (e.getDeviceTime() != null && !data.isLink()) {
-                    data.setLink((System.currentTimeMillis() - e.getDeviceTime()) < BusinessConstants.LINK_OFF_LIMIT);
+                    data.setLink((System.currentTimeMillis() - e.getDeviceTime()) < getLimitTime());
                 }
             });
         // 总流量
@@ -74,8 +73,7 @@ public abstract class DetailDataConvert extends Convert {
             // 点位code
             data.setForwardPointCode(forward.get().getCode());
             if (forward.get().getDeviceTime() != null && !data.isLink()) {
-                data.setLink(
-                    (System.currentTimeMillis() - forward.get().getDeviceTime()) < BusinessConstants.LINK_OFF_LIMIT);
+                data.setLink((System.currentTimeMillis() - forward.get().getDeviceTime()) < getLimitTime());
             }
             if (reverse.isPresent()) {
                 try {
@@ -85,8 +83,7 @@ public abstract class DetailDataConvert extends Convert {
                     // 点位code
                     data.setReversePointCode(reverse.get().getCode());
                     if (reverse.get().getDeviceTime() != null && !data.isLink()) {
-                        data.setLink((System.currentTimeMillis()
-                            - reverse.get().getDeviceTime()) < BusinessConstants.LINK_OFF_LIMIT);
+                        data.setLink((System.currentTimeMillis() - reverse.get().getDeviceTime()) < getLimitTime());
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
@@ -98,4 +95,6 @@ public abstract class DetailDataConvert extends Convert {
             }
         }
     }
+
+    protected abstract long getLimitTime();
 }

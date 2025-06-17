@@ -70,13 +70,18 @@ public class DeviceService {
      * 水中控台数据集(水仪表)
      */
     public List<CurrentDetailData> currentDetailData(DetailForm form, DetailDataEnum dataEnum) {
+        List<CurrentDetailData> currentDetailData = null;
         if (dataEnum == DetailDataEnum.WATER) {
-            return currentDetailData(form, waterConvert, BusinessConstants.Water.SYB);
+            currentDetailData = currentDetailData(form, waterConvert, BusinessConstants.Water.SYB);
         }
         if (dataEnum == DetailDataEnum.STEAM) {
-            return currentDetailData(form, steamConvert, BusinessConstants.Steam.QYB);
+            currentDetailData = currentDetailData(form, steamConvert, BusinessConstants.Steam.QYB);
         }
-        return null;
+        if (CollectionUtils.isNotEmpty(currentDetailData)) {
+            currentDetailData
+                .sort(Comparator.comparing(currentDetailData1 -> Long.parseLong(currentDetailData1.getId())));
+        }
+        return currentDetailData;
     }
 
     /**

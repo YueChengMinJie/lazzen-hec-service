@@ -3,6 +3,7 @@ package com.lazzen.hec.convert;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.lazzen.hec.enumeration.DetailDataEnum;
@@ -13,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class WaterDetailDataConvert extends DetailDataConvert {
+    @Value("${lazzen.hec.water-limit-time-seconds:300}")
+    private long limitTime;
+
     private final String VALUE_TYPES = getDetailDataEnum().getForwardTotal() + "|"
         + getDetailDataEnum().getReverseTotal() + "|" + getDetailDataEnum().getMoment();
 
@@ -32,5 +36,10 @@ public class WaterDetailDataConvert extends DetailDataConvert {
     String getKeyFromGroup(Matcher matcher) {
         // 提取 <反向总量1>的数字
         return matcher.group(SipaBootCommonConstants.Number.INT_2);
+    }
+
+    @Override
+    protected long getLimitTime() {
+        return limitTime * 1000;
     }
 }
