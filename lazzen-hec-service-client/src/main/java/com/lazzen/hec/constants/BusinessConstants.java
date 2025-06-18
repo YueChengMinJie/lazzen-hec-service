@@ -8,6 +8,8 @@ public interface BusinessConstants {
 
     String CONTENT_DISPOSITION = "Content-Disposition";
 
+    String MONTH = "月";
+
     /**
      * 水中控
      */
@@ -44,5 +46,13 @@ public interface BusinessConstants {
 
     interface Electronic {
         String CATEGORY = "electric";
+    }
+
+    interface DateFormat {
+        String YEAR = "yyyy";
+
+        String YEAR_MONTH = "yyyyMM";
+
+        String HOUR = "HH";
     }
 }

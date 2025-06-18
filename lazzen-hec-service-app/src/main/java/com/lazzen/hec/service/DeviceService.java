@@ -119,6 +119,7 @@ public class DeviceService {
 
     public void historyCategoryEnergyExport(HttpServletResponse response, DataQueryForm form, String categoryType)
         throws IOException {
+        form.setSize(Integer.MAX_VALUE);
         Page<CategoryEnergyData> categoryEnergyDataPage = historyCategoryEnergy(form, categoryType);
 
         response.setContentType(BusinessConstants.EXCEL_EXPORT_CONTENT_TYPE);
@@ -250,7 +251,10 @@ public class DeviceService {
 
     private BigDecimal calculateYoy(List<CategoryEnergyData> data, int currentIndex,
         List<CategoryEnergyData> previousData) {
-        CategoryEnergyData previous = previousData.get(currentIndex);
+        CategoryEnergyData previous = null;
+        if (CollectionUtils.isNotEmpty(previousData)) {
+            previous = previousData.get(currentIndex);
+        }
         CategoryEnergyData current = data.get(currentIndex);
         return calc(previous, current);
     }

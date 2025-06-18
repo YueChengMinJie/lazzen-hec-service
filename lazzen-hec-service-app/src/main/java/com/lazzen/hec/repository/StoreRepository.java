@@ -1,7 +1,10 @@
 package com.lazzen.hec.repository;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -18,6 +21,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.convert.CategoryConvert;
 import com.lazzen.hec.dto.CategoryEnergyData;
 import com.lazzen.hec.enumeration.ChartQueryEnum;
@@ -32,8 +36,10 @@ import com.lazzen.hec.po.CategoryEnergyMonth;
 import com.lazzen.hec.po.DeviceOnlineStatus;
 import com.lazzen.hec.po.DevicePointData;
 import com.lazzen.hec.po.base.ActualityObject;
+import com.sipa.boot.java8.common.constants.SipaBootCommonConstants;
 import com.sipa.boot.java8.data.mysql.constants.SipaBootMysqlConstants;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.NumberUtil;
 import lombok.RequiredArgsConstructor;
 
@@ -75,10 +81,11 @@ public class StoreRepository {
             // 水 减去反向流量
             Page<CategoryEnergy> reverse = pageCategory(form, form.getReversePointCode(), categoryType, sn);
             if (CollectionUtils.isNotEmpty(reverse.getRecords())) {
-                Map<String, String> reverseMap = reverse.getRecords()
-                    .stream()
-                    .collect(
-                        Collectors.toMap(e -> e.getDateIndex() + e.getHourIndex(), CategoryEnergy::getRelaTimeValue));
+                Map<String,
+                    String> reverseMap = reverse.getRecords()
+                        .stream()
+                        .collect(Collectors.toMap(e -> e.getDateIndex() + e.getHourIndex(),
+                            CategoryEnergy::getRelaTimeValue, (s, s2) -> s2));
                 for (CategoryEnergy record : forWard.getRecords()) {
                     String reverseValue = reverseMap.get(record.getDateIndex() + record.getHourIndex());
                     if (StringUtils.isBlank(reverseValue)) {
@@ -143,19 +150,21 @@ public class StoreRepository {
                 endDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX);
             } else {
                 // 本月开始到本月结束
-                ZoneId zoneId = ZoneId.of("Asia/Shanghai");
-                startDate = LocalDate.now(zoneId).with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
-                endDate = LocalDate.now(zoneId).with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
+                startDate = now.toLocalDate().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+                endDate = now.toLocalDate().with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
             }
-            List<CategoryEnergy> categoryEnergies =
-                this.categoryEnergyMapper.selectList(Wrappers.<CategoryEnergy>lambdaQuery()
-                    .in(CategoryEnergy::getSn, getSnList(devicePointData))
-                    .in(CategoryEnergy::getCode, getCodeList(dataType, devicePointData))
-                    .ge(CategoryEnergy::getDateIndex, startDate.toLocalDate())
-                    .le(CategoryEnergy::getDateIndex, endDate.toLocalDate())
-                    .ge(CategoryEnergy::getHourIndex, startDate.getHour())
-                    .le(CategoryEnergy::getHourIndex, endDate.getHour())
-                    .orderByAsc(CategoryEnergy::getId));
+            List<CategoryEnergy> categoryEnergies = this.categoryEnergyMapper.selectList(Wrappers
+                .<CategoryEnergy>lambdaQuery()
+                .in(CategoryEnergy::getSn, getSnList(devicePointData))
+                .in(CategoryEnergy::getCode, getCodeList(dataType, devicePointData))
+                .ge(CategoryEnergy::getDateIndex,
+                    Integer.parseInt(LocalDateTimeUtil.format(startDate, DateTimeFormatter.BASIC_ISO_DATE)))
+                .le(CategoryEnergy::getDateIndex,
+                    Integer.parseInt(LocalDateTimeUtil.format(endDate, DateTimeFormatter.BASIC_ISO_DATE)))
+                .ge(CategoryEnergy::getHourIndex,
+                    LocalDateTimeUtil.format(startDate, BusinessConstants.DateFormat.HOUR))
+                .le(CategoryEnergy::getHourIndex, LocalDateTimeUtil.format(endDate, BusinessConstants.DateFormat.HOUR))
+                .orderByAsc(CategoryEnergy::getId));
             if (CollectionUtils.isNotEmpty(categoryEnergies)) {
                 Map<String, List<CategoryEnergy>> collect;
                 if (dateType == ChartQueryEnum.DAY) {
@@ -164,7 +173,7 @@ public class StoreRepository {
                     waterDayProcess(devicePointData, dataType, dbCollect);
                     collect = new LinkedHashMap<>();
                     for (int i = 0; i < 25; i++) {
-                        String key = getFormattedHour(i + "");
+                        String key = getFormattedHour(i + SipaBootCommonConstants.BLANK);
                         collect.put(key, dbCollect.get(key));
                     }
                 } else if (dateType == ChartQueryEnum.WEEK) {
@@ -181,8 +190,7 @@ public class StoreRepository {
                         .collect(Collectors.groupingBy(e -> getFormattedDay(e.getDateIndex())));
                     waterDayProcess(devicePointData, dataType, dbCollect);
                     collect = new LinkedHashMap<>();
-                    LocalDate lastDay =
-                        LocalDate.now(ZoneId.of("Asia/Shanghai")).with(TemporalAdjusters.lastDayOfMonth());
+                    LocalDate lastDay = now.toLocalDate().with(TemporalAdjusters.lastDayOfMonth());
                     IntStream.rangeClosed(1, lastDay.getDayOfMonth()).forEach(day -> {
                         String key = getFormattedDay(day);
                         collect.put(key, dbCollect.get(key));
@@ -194,15 +202,14 @@ public class StoreRepository {
                         .date(entry.getKey())
                         .value(getSumValue(getValue(entry, dataType, devicePointData)))
                         .build())
-                    .sorted(Comparator.comparing(CategoryEnergyData::getDate))
                     .collect(Collectors.toList());
             }
         } else {
             if (dateType == ChartQueryEnum.QUARTER) {
-                startDate = now.withMonth(LocalDate.now().getMonth().firstMonthOfQuarter().getValue())
+                startDate = now.withMonth(now.toLocalDate().getMonth().firstMonthOfQuarter().getValue())
                     .with(TemporalAdjusters.firstDayOfMonth())
                     .with(LocalTime.MIN);
-                endDate = now.withMonth(LocalDate.now().getMonth().firstMonthOfQuarter().getValue() + 2)
+                endDate = now.withMonth(now.toLocalDate().getMonth().firstMonthOfQuarter().getValue() + 2)
                     .with(TemporalAdjusters.lastDayOfMonth())
                     .with(LocalTime.MAX);
             } else {
@@ -213,12 +220,16 @@ public class StoreRepository {
                 this.monthMapper.selectList(Wrappers.<CategoryEnergyMonth>lambdaQuery()
                     .in(CategoryEnergyMonth::getSn, getSnList(devicePointData))
                     .in(CategoryEnergyMonth::getCode, getCodeList(dataType, devicePointData))
-                    .ge(CategoryEnergyMonth::getYearIndex, startDate.format(DateTimeFormatter.ofPattern("yyyy")))
-                    .le(CategoryEnergyMonth::getYearIndex, endDate.format(DateTimeFormatter.ofPattern("yyyy")))
+                    .ge(CategoryEnergyMonth::getYearIndex,
+                        startDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR)))
+                    .le(CategoryEnergyMonth::getYearIndex,
+                        endDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR)))
                     .ge(CategoryEnergyMonth::getDateIndex,
-                        Integer.valueOf(startDate.format(DateTimeFormatter.ofPattern("yyyyMM"))))
+                        Integer.valueOf(
+                            startDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR_MONTH))))
                     .le(CategoryEnergyMonth::getDateIndex,
-                        Integer.valueOf(endDate.format(DateTimeFormatter.ofPattern("yyyyMM"))))
+                        Integer.valueOf(
+                            endDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR_MONTH))))
                     .orderByAsc(CategoryEnergyMonth::getId));
             if (CollectionUtils.isNotEmpty(categoryEnergyMonths)) {
                 Map<String, List<CategoryEnergyMonth>> collect;
@@ -237,7 +248,7 @@ public class StoreRepository {
                     waterMonthProcess(devicePointData, dataType, dbCollect);
                     collect = new LinkedHashMap<>();
                     for (int i = 0; i < 12; i++) {
-                        String key = (i + 1) + "月";
+                        String key = (i + 1) + BusinessConstants.MONTH;
                         collect.put(key, dbCollect.get(key));
                     }
                 }
@@ -247,7 +258,6 @@ public class StoreRepository {
                         .date(entry.getKey())
                         .value(getSumValue(getMonthValue(entry, dataType, devicePointData)))
                         .build())
-                    .sorted(Comparator.comparing(CategoryEnergyData::getDate))
                     .collect(Collectors.toList());
             }
         }
@@ -256,32 +266,32 @@ public class StoreRepository {
 
     private List<? extends ActualityObject> getValue(Map.Entry<String, List<CategoryEnergy>> entry,
         DetailDataEnum dataType, List<DevicePointData> devicePointData) {
-        if (dataType == DetailDataEnum.WATER) {
+        List<CategoryEnergy> value = entry.getValue();
+        if (dataType == DetailDataEnum.WATER && CollectionUtils.isNotEmpty(value)) {
             List<String> codeList = devicePointData.stream()
                 .filter(dpd -> dpd.getName().startsWith(dataType.getForwardTotal()))
                 .map(DevicePointData::getCode)
                 .collect(Collectors.toList());
-            return entry.getValue()
-                .stream()
+            return value.stream()
                 .filter(categoryEnergy -> codeList.contains(categoryEnergy.getCode()))
                 .collect(Collectors.toList());
         }
-        return entry.getValue();
+        return value;
     }
 
     private List<? extends ActualityObject> getMonthValue(Map.Entry<String, List<CategoryEnergyMonth>> entry,
         DetailDataEnum dataType, List<DevicePointData> devicePointData) {
-        if (dataType == DetailDataEnum.WATER) {
+        List<CategoryEnergyMonth> value = entry.getValue();
+        if (dataType == DetailDataEnum.WATER && CollectionUtils.isNotEmpty(value)) {
             List<String> codeList = devicePointData.stream()
                 .filter(dpd -> dpd.getName().startsWith(dataType.getForwardTotal()))
                 .map(DevicePointData::getCode)
                 .collect(Collectors.toList());
-            return entry.getValue()
-                .stream()
+            return value.stream()
                 .filter(categoryEnergy -> codeList.contains(categoryEnergy.getCode()))
                 .collect(Collectors.toList());
         }
-        return entry.getValue();
+        return value;
     }
 
     private void waterMonthProcess(List<DevicePointData> devicePointData, DetailDataEnum dataType,
@@ -339,11 +349,11 @@ public class StoreRepository {
     }
 
     private String getRealValue(ActualityObject a, ActualityObject b) {
-        String aActuality = a.getActuality();
-        String bActuality = b.getActuality();
-        if (StringUtils.isNotBlank(aActuality) && StringUtils.isNotBlank(bActuality)) {
-            BigDecimal aBigDecimal = new BigDecimal(aActuality);
-            BigDecimal bBigDecimal = new BigDecimal(bActuality).abs();
+        String aRelaTimeValue = a.getRelaTimeValue();
+        String bRelaTimeValue = b.getRelaTimeValue();
+        if (StringUtils.isNotBlank(aRelaTimeValue) && StringUtils.isNotBlank(bRelaTimeValue)) {
+            BigDecimal aBigDecimal = new BigDecimal(aRelaTimeValue);
+            BigDecimal bBigDecimal = new BigDecimal(bRelaTimeValue).abs();
             return aBigDecimal.subtract(bBigDecimal).toString();
         }
         return null;
@@ -368,7 +378,7 @@ public class StoreRepository {
 
     private String getFormattedMonthYear(Integer dateIndex) {
         String month = dateIndex.toString().substring(4);
-        return Integer.valueOf(month) + "月";
+        return Integer.valueOf(month) + BusinessConstants.MONTH;
     }
 
     private String getFormattedMonthByIdx(int i) {
@@ -385,7 +395,7 @@ public class StoreRepository {
     }
 
     private String getFormattedMonth(Integer dateIndex, LocalDateTime startDate, LocalDateTime endDate) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMM");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR_MONTH);
         Integer start = Integer.valueOf(startDate.format(dtf));
         Integer end = Integer.valueOf(endDate.format(dtf));
         if (Objects.equals(dateIndex, end)) {
@@ -482,19 +492,21 @@ public class StoreRepository {
                 endDate = now.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).with(LocalTime.MAX);
             } else {
                 // 本月开始到本月结束
-                ZoneId zoneId = ZoneId.of("Asia/Shanghai");
-                startDate = LocalDate.now(zoneId).with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
-                endDate = LocalDate.now(zoneId).with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
+                startDate = now.toLocalDate().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+                endDate = now.toLocalDate().with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
             }
-            List<CategoryEnergy> categoryEnergies =
-                this.categoryEnergyMapper.selectList(Wrappers.<CategoryEnergy>lambdaQuery()
-                    .in(CategoryEnergy::getSn, getSnList(devicePointData))
-                    .in(CategoryEnergy::getCode, getCodeList(dataType, devicePointData))
-                    .ge(CategoryEnergy::getDateIndex, startDate.toLocalDate())
-                    .le(CategoryEnergy::getDateIndex, endDate.toLocalDate())
-                    .ge(CategoryEnergy::getHourIndex, startDate.getHour())
-                    .le(CategoryEnergy::getHourIndex, endDate.getHour())
-                    .orderByAsc(CategoryEnergy::getId));
+            List<CategoryEnergy> categoryEnergies = this.categoryEnergyMapper.selectList(Wrappers
+                .<CategoryEnergy>lambdaQuery()
+                .in(CategoryEnergy::getSn, getSnList(devicePointData))
+                .in(CategoryEnergy::getCode, getCodeList(dataType, devicePointData))
+                .ge(CategoryEnergy::getDateIndex,
+                    Integer.parseInt(LocalDateTimeUtil.format(startDate, DateTimeFormatter.BASIC_ISO_DATE)))
+                .le(CategoryEnergy::getDateIndex,
+                    Integer.parseInt(LocalDateTimeUtil.format(endDate, DateTimeFormatter.BASIC_ISO_DATE)))
+                .ge(CategoryEnergy::getHourIndex,
+                    LocalDateTimeUtil.format(startDate, BusinessConstants.DateFormat.HOUR))
+                .le(CategoryEnergy::getHourIndex, LocalDateTimeUtil.format(endDate, BusinessConstants.DateFormat.HOUR))
+                .orderByAsc(CategoryEnergy::getId));
             if (CollectionUtils.isNotEmpty(categoryEnergies)) {
                 Map<String, String> codeNameMap = getCodeNameMap(devicePointData, dataType);
                 Map<String, List<CategoryEnergy>> group = new HashMap<>();
@@ -514,10 +526,10 @@ public class StoreRepository {
             }
         } else {
             if (dateType == ChartQueryEnum.QUARTER) {
-                startDate = now.withMonth(LocalDate.now().getMonth().firstMonthOfQuarter().getValue())
+                startDate = now.withMonth(now.toLocalDate().getMonth().firstMonthOfQuarter().getValue())
                     .with(TemporalAdjusters.firstDayOfMonth())
                     .with(LocalTime.MIN);
-                endDate = now.withMonth(LocalDate.now().getMonth().firstMonthOfQuarter().getValue() + 2)
+                endDate = now.withMonth(now.toLocalDate().getMonth().firstMonthOfQuarter().getValue() + 2)
                     .with(TemporalAdjusters.lastDayOfMonth())
                     .with(LocalTime.MAX);
             } else {
@@ -528,12 +540,16 @@ public class StoreRepository {
                 this.monthMapper.selectList(Wrappers.<CategoryEnergyMonth>lambdaQuery()
                     .in(CategoryEnergyMonth::getSn, getSnList(devicePointData))
                     .in(CategoryEnergyMonth::getCode, getCodeList(dataType, devicePointData))
-                    .ge(CategoryEnergyMonth::getYearIndex, startDate.format(DateTimeFormatter.ofPattern("yyyy")))
-                    .le(CategoryEnergyMonth::getYearIndex, endDate.format(DateTimeFormatter.ofPattern("yyyy")))
+                    .ge(CategoryEnergyMonth::getYearIndex,
+                        startDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR)))
+                    .le(CategoryEnergyMonth::getYearIndex,
+                        endDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR)))
                     .ge(CategoryEnergyMonth::getDateIndex,
-                        Integer.valueOf(startDate.format(DateTimeFormatter.ofPattern("yyyyMM"))))
+                        Integer.valueOf(
+                            startDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR_MONTH))))
                     .le(CategoryEnergyMonth::getDateIndex,
-                        Integer.valueOf(endDate.format(DateTimeFormatter.ofPattern("yyyyMM"))))
+                        Integer.valueOf(
+                            endDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR_MONTH))))
                     .orderByAsc(CategoryEnergyMonth::getId));
             if (CollectionUtils.isNotEmpty(categoryEnergyMonths)) {
                 Map<String, String> codeNameMap = getCodeNameMap(devicePointData, dataType);
@@ -562,9 +578,10 @@ public class StoreRepository {
         return devicePointData.stream().collect(Collectors.toMap(DevicePointData::getCode, dpd -> {
             String dpdName = dpd.getName();
             String key = getKey(dpdName, numberPattern);
-            if (dataType == DetailDataEnum.WATER && dpdName.equals(dataType.getForwardTotal())) {
+            if (dataType == DetailDataEnum.WATER && dpdName.equals(dataType.getForwardTotal() + key)) {
                 return dataType.getNamePrefix() + key;
-            } else if (dataType == DetailDataEnum.STEAM) {
+            } else if (dataType == DetailDataEnum.STEAM
+                && dpdName.endsWith(key + SipaBootCommonConstants.EMPTY + dataType.getForwardTotal())) {
                 return dataType.getNamePrefix() + key;
             }
             return StringUtils.EMPTY;
