@@ -5,7 +5,5 @@ package com.lazzen.hec.po.base;
  * @date 2025/5/29
  */
 public interface ActualityObject {
-    String getRelaTimeValue();
-
     String getActuality();
 }

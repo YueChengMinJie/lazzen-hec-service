@@ -349,11 +349,11 @@ public class StoreRepository {
     }
 
     private String getRealValue(ActualityObject a, ActualityObject b) {
-        String aRelaTimeValue = a.getRelaTimeValue();
-        String bRelaTimeValue = b.getRelaTimeValue();
-        if (StringUtils.isNotBlank(aRelaTimeValue) && StringUtils.isNotBlank(bRelaTimeValue)) {
-            BigDecimal aBigDecimal = new BigDecimal(aRelaTimeValue);
-            BigDecimal bBigDecimal = new BigDecimal(bRelaTimeValue).abs();
+        String aActuality = a.getActuality();
+        String bActuality = b.getActuality();
+        if (StringUtils.isNotBlank(aActuality) && StringUtils.isNotBlank(bActuality)) {
+            BigDecimal aBigDecimal = new BigDecimal(aActuality);
+            BigDecimal bBigDecimal = new BigDecimal(bActuality).abs();
             return aBigDecimal.subtract(bBigDecimal).toString();
         }
         return null;
