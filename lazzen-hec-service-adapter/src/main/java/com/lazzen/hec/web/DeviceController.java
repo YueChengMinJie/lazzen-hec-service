@@ -83,4 +83,10 @@ public class DeviceController {
     public ResponseWrapper<List<ChartTopData>> chartTop(@Valid @RequestBody ChartTopForm form) {
         return ResponseWrapper.successOf(deviceService.chartTop(form));
     }
+
+    @PostMapping("/param/export")
+    @Operation(summary = "导出波形数据")
+    public void paramExport(@Valid @RequestBody ParamExportForm form, HttpServletResponse response) {
+        deviceService.paramExport(response, form);
+    }
 }

@@ -3,11 +3,14 @@ package com.lazzen.hec.service;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -20,10 +23,7 @@ import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.convert.*;
 import com.lazzen.hec.dto.*;
 import com.lazzen.hec.enumeration.DetailDataEnum;
-import com.lazzen.hec.form.ChartForm;
-import com.lazzen.hec.form.ChartTopForm;
-import com.lazzen.hec.form.DataQueryForm;
-import com.lazzen.hec.form.DetailForm;
+import com.lazzen.hec.form.*;
 import com.lazzen.hec.po.CategoryEnergy;
 import com.lazzen.hec.po.DeviceOnlineStatus;
 import com.lazzen.hec.po.DevicePointData;
@@ -33,6 +33,7 @@ import com.lazzen.hec.repository.StoreRepository;
 import cn.hutool.core.util.NumberUtil;
 import cn.idev.excel.FastExcel;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import ma.glasnost.orika.MapperFacade;
 
 /**
@@ -283,5 +284,30 @@ public class DeviceService {
         }
         chartTopData.sort(Comparator.comparing(ChartTopData::getValue).reversed());
         return chartTopData;
+    }
+
+    @SneakyThrows
+    public void paramExport(HttpServletResponse response, ParamExportForm form) {
+        List<DeviceCurrentData> immediatelyBySn = getImmediatelyBySn(form.getDomainCode(), null);
+
+        response.setContentType(BusinessConstants.EXCEL_EXPORT_CONTENT_TYPE);
+        String param = form.getParam();
+        String fileName = URLEncoder.encode(param + ".xlsx", StandardCharsets.UTF_8.name());
+        response.setHeader(BusinessConstants.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+
+        if (CollectionUtils.isNotEmpty(immediatelyBySn)) {
+            List<WaveformExport> list = new ArrayList<>();
+            for (DeviceCurrentData immediatelyBySnData : immediatelyBySn.stream()
+                .filter(deviceCurrentData -> deviceCurrentData.getName().contains(param))
+                .sorted(Comparator.comparing(
+                    deviceCurrentData -> Integer.parseInt(deviceCurrentData.getName().substring(param.length()))))
+                .collect(Collectors.toList())) {
+                WaveformExport waveformExport = new WaveformExport();
+                waveformExport.setName(immediatelyBySnData.getName());
+                waveformExport.setValue(immediatelyBySnData.getValue());
+                list.add(waveformExport);
+            }
+            FastExcel.write(response.getOutputStream(), WaveformExport.class).sheet(param).doWrite(list);
+        }
     }
 }
