@@ -34,9 +34,15 @@ public class CurrentDetailData {
     @Schema(description = "正向总量/累积值的点位code 分析数据需要")
     private String forwardPointCode;
 
+    @Schema(description = "正向总量")
+    private String forwardValue;
+
     @Schema(description = "瞬时流量/实时值的点位code 分析数据需要")
     private String momentPointCode;
 
     @Schema(description = "反向总量的点位code 分析数据需要")
     private String reversePointCode;
+
+    @Schema(description = "反向总量")
+    private String reverseValue;
 }

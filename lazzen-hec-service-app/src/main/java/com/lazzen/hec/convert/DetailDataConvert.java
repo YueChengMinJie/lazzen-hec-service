@@ -61,14 +61,17 @@ public abstract class DetailDataConvert extends Convert {
                     data.setLink((System.currentTimeMillis() - e.getDeviceTime()) < getLimitTime());
                 }
             });
-        // 总流量
+        // 正向流量
         Optional<DevicePointData> forward = threeInOne.stream()
             .filter(e -> e != null && e.getName().contains(getDetailDataEnum().getForwardTotal()))
             .findFirst();
+        data.setForwardValue(forward.map(DevicePointData::getValue).orElse(null));
+        // 反向流量
         Optional<DevicePointData> reverse = threeInOne.stream()
             .filter(e -> e != null && e.getName().contains(getDetailDataEnum().getReverseTotal()))
             .findFirst();
-
+        data.setReverseValue(reverse.map(DevicePointData::getValue).orElse(null));
+        // 总流量
         if (forward.isPresent()) {
             // 点位code
             data.setForwardPointCode(forward.get().getCode());

@@ -310,4 +310,12 @@ public class DeviceService {
             FastExcel.write(response.getOutputStream(), WaveformExport.class).sheet(param).doWrite(list);
         }
     }
+
+    public List<SqYbAliasDto> querySqAlias(int type) {
+        return smartManagementRepository.sqAlias(type);
+    }
+
+    public Boolean saveSqAlias(SqYbAliasForm form) {
+        return smartManagementRepository.saveSqAlias(form);
+    }
 }

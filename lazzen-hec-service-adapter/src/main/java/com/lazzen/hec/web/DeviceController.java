@@ -89,4 +89,16 @@ public class DeviceController {
     public void paramExport(@Valid @RequestBody ParamExportForm form, HttpServletResponse response) {
         deviceService.paramExport(response, form);
     }
+
+    @GetMapping("/sq/yb/alias")
+    @Operation(summary = "水汽仪表别名列表")
+    public ResponseWrapper<List<SqYbAliasDto>> querySqAlias(@Valid @NotNull(message = "缺少类型") int type) {
+        return ResponseWrapper.successOf(deviceService.querySqAlias(type));
+    }
+
+    @PostMapping("/sq/yb/alias")
+    @Operation(summary = "水汽仪表别名保存")
+    public ResponseWrapper<Boolean> saveSqAlias(@Valid @RequestBody SqYbAliasForm form) {
+        return ResponseWrapper.successOf(deviceService.saveSqAlias(form));
+    }
 }
