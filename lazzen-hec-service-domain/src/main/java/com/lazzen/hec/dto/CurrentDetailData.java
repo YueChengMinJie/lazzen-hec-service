@@ -20,6 +20,8 @@ public class CurrentDetailData {
     @Schema(description = "水仪表名字 ->水仪表1  蒸汽仪表名字->气仪表1")
     private String name;
 
+    private String calcName;
+
     @Schema(description = "仪表的在线状态")
     private boolean link;
 

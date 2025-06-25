@@ -6,10 +6,7 @@ import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
@@ -101,7 +98,21 @@ public class DeviceService {
         }
         // 页面筛选
         if (StringUtils.isNotBlank(form.getDeviceName())) {
-            currentDetailData.removeIf(e -> !e.getName().contains(form.getDeviceName()));
+            Map<String, String> map = new HashMap<>(16);
+            List<SqYbAliasDto> sqYbAliasDtos = new ArrayList<>();
+            if (BusinessConstants.Water.SYB.equals(deviceType)) {
+                sqYbAliasDtos = querySqAlias(1);
+            } else if (BusinessConstants.Steam.QYB.equals(deviceType)) {
+                sqYbAliasDtos = querySqAlias(2);
+            }
+            for (SqYbAliasDto sqYbAliasDto : sqYbAliasDtos) {
+                map.put(sqYbAliasDto.getIdx() + StringUtils.EMPTY, sqYbAliasDto.getName());
+            }
+            for (CurrentDetailData currentDetailDatum : currentDetailData) {
+                String id = currentDetailDatum.getId();
+                currentDetailDatum.setCalcName(map.getOrDefault(id, currentDetailDatum.getName()));
+            }
+            currentDetailData.removeIf(e -> !e.getCalcName().contains(form.getDeviceName()));
         }
         if (form.getLink() != null) {
             currentDetailData.removeIf(e -> !Objects.equals(e.isLink(), form.getLink()));
