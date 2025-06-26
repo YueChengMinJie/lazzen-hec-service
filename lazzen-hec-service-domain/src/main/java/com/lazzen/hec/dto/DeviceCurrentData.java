@@ -21,4 +21,6 @@ public class DeviceCurrentData {
     private String value;
 
     private String unit;
+
+    private String code;
 }

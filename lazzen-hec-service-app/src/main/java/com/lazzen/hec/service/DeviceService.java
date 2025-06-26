@@ -285,6 +285,23 @@ public class DeviceService {
                 chartDataList.addAll(top(data));
             }
         }
+        if (CollectionUtils.isNotEmpty(chartDataList)) {
+            String prefix = form.getDataType() == DetailDataEnum.WATER ? BusinessConstants.Water.NAME_PREFIX
+                : BusinessConstants.Steam.NAME_PREFIX;
+            List<SqYbAliasDto> sqYbAliasDtos = querySqAlias(form.getDataType() == DetailDataEnum.WATER ? 1 : 2);
+            Map<String, String> map = new HashMap<>(16);
+            for (SqYbAliasDto sqYbAliasDto : sqYbAliasDtos) {
+                map.put(sqYbAliasDto.getIdx() + StringUtils.EMPTY, sqYbAliasDto.getName());
+            }
+            for (ChartTopData chartTopData : chartDataList) {
+                String name = chartTopData.getName();
+                String nameIdx = name.substring(prefix.length());
+                String s = map.get(nameIdx);
+                if (StringUtils.isNotBlank(s)) {
+                    chartTopData.setName(s);
+                }
+            }
+        }
         return chartDataList;
     }
 

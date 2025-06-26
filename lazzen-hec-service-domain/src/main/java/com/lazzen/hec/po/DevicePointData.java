@@ -11,9 +11,6 @@ import lombok.Data;
  */
 @Data
 public class DevicePointData {
-    /**
-     * 
-     */
     private Long id;
 
     /**
