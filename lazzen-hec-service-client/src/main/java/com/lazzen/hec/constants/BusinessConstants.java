@@ -54,5 +54,7 @@ public interface BusinessConstants {
         String YEAR_MONTH = "yyyyMM";
 
         String HOUR = "HH";
+
+        String DT = "yyyy-MM-dd HH:mm:ss";
     }
 }

@@ -27,14 +27,8 @@ import com.lazzen.hec.dto.CategoryEnergyData;
 import com.lazzen.hec.enumeration.ChartQueryEnum;
 import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.form.DataQueryForm;
-import com.lazzen.hec.mapper.CategoryEnergyMapper;
-import com.lazzen.hec.mapper.CategoryEnergyMonthMapper;
-import com.lazzen.hec.mapper.DeviceOnlineStatusMapper;
-import com.lazzen.hec.mapper.DevicePointDataMapper;
-import com.lazzen.hec.po.CategoryEnergy;
-import com.lazzen.hec.po.CategoryEnergyMonth;
-import com.lazzen.hec.po.DeviceOnlineStatus;
-import com.lazzen.hec.po.DevicePointData;
+import com.lazzen.hec.mapper.*;
+import com.lazzen.hec.po.*;
 import com.lazzen.hec.po.base.ActualityObject;
 import com.sipa.boot.java8.common.constants.SipaBootCommonConstants;
 import com.sipa.boot.java8.data.mysql.constants.SipaBootMysqlConstants;
@@ -60,6 +54,8 @@ public class StoreRepository {
     private final DevicePointDataMapper devicePointDataMapper;
 
     private final DevicePointDataMapper immediatelyMapper;
+
+    private final DeviceBusinessPointSurveyMapper deviceBusinessPointSurveyMapper;
 
     public List<DevicePointData> getImmediatelyBySn(String sn, String deviceType) {
         return immediatelyMapper.selectList(new LambdaQueryWrapper<DevicePointData>().eq(DevicePointData::getSn, sn)
@@ -594,5 +590,46 @@ public class StoreRepository {
             return numMatcher.group().trim();
         }
         return StringUtils.EMPTY;
+    }
+
+    public List<List<String>> queryCurve(List<LocalDateTime> localDateTimes, String sn, List<IotPointConf> points) {
+        LocalDateTime start = localDateTimes.get(0);
+        LocalDateTime end = localDateTimes.get(localDateTimes.size() - 1);
+        List<DeviceBusinessPointSurvey> deviceBusinessPointSurveys =
+            deviceBusinessPointSurveyMapper.selectList(Wrappers.<DeviceBusinessPointSurvey>lambdaQuery()
+                .eq(DeviceBusinessPointSurvey::getSn, sn)
+                .ge(DeviceBusinessPointSurvey::getIntervalStart, LocalDateTimeUtil.toEpochMilli(start))
+                .le(DeviceBusinessPointSurvey::getIntervalStart, LocalDateTimeUtil.toEpochMilli(end)));
+        List<List<String>> result = new ArrayList<>();
+        for (IotPointConf point : points) {
+            result.add(new ArrayList<>());
+        }
+        if (CollectionUtils.isNotEmpty(deviceBusinessPointSurveys)) {
+            Map<Long, List<DeviceBusinessPointSurvey>> map = deviceBusinessPointSurveys.stream()
+                .collect(Collectors.groupingBy(DeviceBusinessPointSurvey::getIntervalStart));
+            for (LocalDateTime localDateTime : localDateTimes) {
+                long ts = LocalDateTimeUtil.toEpochMilli(localDateTime);
+                List<DeviceBusinessPointSurvey> deviceBusinessPointSurveyList = map.get(ts);
+                if (CollectionUtils.isNotEmpty(deviceBusinessPointSurveyList)) {
+                    Map<String, DeviceBusinessPointSurvey> collect = deviceBusinessPointSurveyList.stream()
+                        .collect(Collectors.toMap(DeviceBusinessPointSurvey::getCode, e -> e, (t, t2) -> t2));
+                    for (int i = 0; i < points.size(); i++) {
+                        IotPointConf point = points.get(i);
+                        String pointCode = point.getPointCode();
+                        DeviceBusinessPointSurvey deviceBusinessPointSurvey = collect.get(pointCode);
+                        if (deviceBusinessPointSurvey == null) {
+                            result.get(i).add(null);
+                        } else {
+                            result.get(i).add(deviceBusinessPointSurvey.getValue());
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < points.size(); i++) {
+                        result.get(i).add(null);
+                    }
+                }
+            }
+        }
+        return result;
     }
 }

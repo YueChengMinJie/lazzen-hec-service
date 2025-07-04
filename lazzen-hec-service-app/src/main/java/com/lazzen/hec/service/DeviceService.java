@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,9 +25,12 @@ import com.lazzen.hec.form.*;
 import com.lazzen.hec.po.CategoryEnergy;
 import com.lazzen.hec.po.DeviceOnlineStatus;
 import com.lazzen.hec.po.DevicePointData;
+import com.lazzen.hec.po.IotPointConf;
+import com.lazzen.hec.repository.CommonRepository;
 import com.lazzen.hec.repository.SmartManagementRepository;
 import com.lazzen.hec.repository.StoreRepository;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.idev.excel.FastExcel;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +52,8 @@ public class DeviceService {
     private final MapperFacade mapperFacade;
 
     private final SmartManagementRepository smartManagementRepository;
+
+    private final CommonRepository commonRepository;
 
     /**
      * 获取该设备实时数据
@@ -345,5 +351,34 @@ public class DeviceService {
 
     public Boolean saveSqAlias(SqYbAliasForm form) {
         return smartManagementRepository.saveSqAlias(form);
+    }
+
+    public CurveDto curve(CurveForm form) {
+        String domainCode = form.getDomainCode();
+        String deviceType = form.getDeviceType();
+        String sn = smartManagementRepository.assertSnByDomainCode(domainCode);
+        List<IotPointConf> legendData = commonRepository.queryLegendData(deviceType);
+        CurveDto.CurveDtoBuilder builder = CurveDto.builder();
+        if (CollectionUtils.isNotEmpty(legendData)) {
+            builder.legendData(legendData.stream().map(IotPointConf::getPointName).collect(Collectors.toList()));
+            List<LocalDateTime> localDateTimes = generateOneDayLocalDateTimes();
+            builder.xAxisData(localDateTimes.stream()
+                .map(localDateTime -> LocalDateTimeUtil.format(localDateTime,
+                    DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.DT)))
+                .collect(Collectors.toList()));
+            builder.seriesData(storeRepository.queryCurve(localDateTimes, sn, legendData));
+        }
+        return builder.build();
+    }
+
+    private List<LocalDateTime> generateOneDayLocalDateTimes() {
+        List<LocalDateTime> localDateTimes = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        int adjustedMinute = (now.getMinute() / 15) * 15;
+        LocalDateTime start = now.withMinute(adjustedMinute).withSecond(0).withNano(0).minusDays(1);
+        for (int i = 0; i < 97; i++) {
+            localDateTimes.add(start.plusMinutes(15 * i));
+        }
+        return localDateTimes;
     }
 }

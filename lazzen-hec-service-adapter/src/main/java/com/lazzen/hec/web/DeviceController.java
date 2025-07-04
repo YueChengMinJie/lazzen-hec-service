@@ -101,4 +101,10 @@ public class DeviceController {
     public ResponseWrapper<Boolean> saveSqAlias(@Valid @RequestBody SqYbAliasForm form) {
         return ResponseWrapper.successOf(deviceService.saveSqAlias(form));
     }
+
+    @PostMapping("/curve")
+    @Operation(summary = "曲线")
+    public ResponseWrapper<CurveDto> curve(@Valid @RequestBody CurveForm form) {
+        return ResponseWrapper.successOf(deviceService.curve(form));
+    }
 }
