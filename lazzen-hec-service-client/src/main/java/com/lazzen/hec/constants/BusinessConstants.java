@@ -56,5 +56,7 @@ public interface BusinessConstants {
         String HOUR = "HH";
 
         String DT = "yyyy-MM-dd HH:mm:ss";
+
+        String EXPORT = "yyyy/MM/dd HH:mm:ss";
     }
 }

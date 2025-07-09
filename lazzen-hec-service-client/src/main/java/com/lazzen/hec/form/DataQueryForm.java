@@ -1,6 +1,7 @@
 package com.lazzen.hec.form;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -13,7 +14,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class DataQueryForm extends PageForm {
+public class DataQueryForm {
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
@@ -21,7 +22,8 @@ public class DataQueryForm extends PageForm {
     /**
      * 设备下标
      */
-    private String id;
+    @NotNull
+    private List<String> ids;
 
     @NotBlank
     private String domainCode;
@@ -29,13 +31,13 @@ public class DataQueryForm extends PageForm {
     @NotNull
     private DetailDataEnum dataEnum;
 
-    @NotBlank
+    @NotNull
     @Schema(description = "正向总量/累积值的点位code 分析数据需要  这个参数必须,作为分页的基点")
-    private String forwardPointCode;
+    private List<String> forwardPointCodes;
 
     @Schema(description = "瞬时流量/实时值的点位code 分析数据需要")
-    private String momentPointCode;
+    private List<String> momentPointCodes;
 
     @Schema(description = "反向总量的点位code 分析数据需要")
-    private String reversePointCode;
+    private List<String> reversePointCodes;
 }

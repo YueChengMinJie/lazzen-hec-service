@@ -1,6 +1,5 @@
 package com.lazzen.hec.web;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -9,7 +8,6 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.dto.*;
 import com.lazzen.hec.enumeration.DetailDataEnum;
@@ -60,15 +58,14 @@ public class DeviceController {
 
     @PostMapping("/history/analysis")
     @Operation(summary = "分析数据")
-    public ResponseWrapper<Page<CategoryEnergyData>> historySteam(@Valid @RequestBody DataQueryForm form) {
+    public ResponseWrapper<List<EnergyData>> historySteam(@Valid @RequestBody DataQueryForm form) {
         return ResponseWrapper
             .successOf(deviceService.historyCategoryEnergy(form, BusinessConstants.Electronic.CATEGORY));
     }
 
     @PostMapping("/history/analysis/export")
     @Operation(summary = "导出分析数据")
-    public void historySteamExport(@Valid @RequestBody DataQueryForm form, HttpServletResponse response)
-        throws IOException {
+    public void historySteamExport(@Valid @RequestBody DataQueryForm form, HttpServletResponse response) {
         deviceService.historyCategoryEnergyExport(response, form, BusinessConstants.Electronic.CATEGORY);
     }
 

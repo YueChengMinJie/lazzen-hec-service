@@ -1,6 +1,5 @@
 package com.lazzen.hec.service;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLEncoder;
@@ -16,13 +15,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lazzen.hec.constants.BusinessConstants;
-import com.lazzen.hec.convert.*;
+import com.lazzen.hec.convert.DetailDataConvert;
+import com.lazzen.hec.convert.DeviceDetailDataConvert;
+import com.lazzen.hec.convert.SteamDetailDataConvert;
+import com.lazzen.hec.convert.WaterDetailDataConvert;
 import com.lazzen.hec.dto.*;
 import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.form.*;
-import com.lazzen.hec.po.CategoryEnergy;
 import com.lazzen.hec.po.DeviceOnlineStatus;
 import com.lazzen.hec.po.DevicePointData;
 import com.lazzen.hec.po.IotPointConf;
@@ -31,8 +31,10 @@ import com.lazzen.hec.repository.SmartManagementRepository;
 import com.lazzen.hec.repository.StoreRepository;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
-import cn.hutool.core.util.NumberUtil;
+import cn.idev.excel.ExcelWriter;
 import cn.idev.excel.FastExcel;
+import cn.idev.excel.write.metadata.WriteSheet;
+import cn.idev.excel.write.metadata.fill.FillConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import ma.glasnost.orika.MapperFacade;
@@ -126,85 +128,46 @@ public class DeviceService {
         return currentDetailData;
     }
 
-    public Page<CategoryEnergyData> historyCategoryEnergy(DataQueryForm form, String categoryType) {
+    public List<EnergyData> historyCategoryEnergy(DataQueryForm form, String categoryType) {
         String sn = smartManagementRepository.assertSnByDomainCode(form.getDomainCode());
-        Page<CategoryEnergy> categoryEnergyPage = storeRepository.pageCategoryTotal(form, categoryType, sn);
-        List<CategoryEnergyData> convert = CategoryConvert.convert(categoryEnergyPage.getRecords());
-        Page<CategoryEnergyData> map = mapperFacade.map(categoryEnergyPage, Page.class);
-        map.setRecords(convert);
-        return map;
+        Map<String, String> map = getAliasMap(form.getDataEnum());
+        return storeRepository.listCategoryTotal(form, categoryType, sn, map);
     }
 
-    public void historyCategoryEnergyExport(HttpServletResponse response, DataQueryForm form, String categoryType)
-        throws IOException {
-        form.setSize(Integer.MAX_VALUE);
-        Page<CategoryEnergyData> categoryEnergyDataPage = historyCategoryEnergy(form, categoryType);
+    public void historyCategoryEnergyExport(HttpServletResponse response, DataQueryForm form, String categoryType) {
+        List<EnergyData> energyData = historyCategoryEnergy(form, categoryType);
 
         response.setContentType(BusinessConstants.EXCEL_EXPORT_CONTENT_TYPE);
-        response.setHeader(BusinessConstants.CONTENT_DISPOSITION, "attachment; filename=" + getFileName(form));
+        response.setHeader(BusinessConstants.CONTENT_DISPOSITION, "attachment; filename=" + getFileName());
 
         if (form.getDataEnum() == DetailDataEnum.WATER) {
-            List<CategoryEnergyWaterExport> list =
-                mapperFacade.mapAsList(categoryEnergyDataPage.getRecords(), CategoryEnergyWaterExport.class);
-            computeWaterSubValue(list);
-            doWrite(list, CategoryEnergyWaterExport.class, response,
-                BusinessConstants.Water.NAME_PREFIX + form.getId());
+            doWrite(energyData, response, form);
         } else {
-            List<CategoryEnergySteamExport> list =
-                mapperFacade.mapAsList(categoryEnergyDataPage.getRecords(), CategoryEnergySteamExport.class);
-            computeSteamSubValue(list);
-            doWrite(list, CategoryEnergySteamExport.class, response,
-                BusinessConstants.Steam.NAME_PREFIX + form.getId());
+            doWrite(energyData, response, form);
         }
     }
 
-    private <T> void doWrite(List<T> list, Class<T> clazz, HttpServletResponse response, String sheetName)
-        throws IOException {
-        FastExcel.write(response.getOutputStream(), clazz).sheet(sheetName).doWrite(list);
-    }
-
-    private String getFileName(DataQueryForm form) {
-        String filename = "";
-        if (form.getStartDate() != null) {
-            filename += CategoryConvert.dateFormatter.format(form.getStartDate());
-        }
-        if (form.getEndDate() != null) {
-            if (!filename.isEmpty()) {
-                filename += "-";
-            }
-            filename += CategoryConvert.dateFormatter.format(form.getEndDate());
-        }
-        if (filename.isEmpty()) {
-            filename += CategoryConvert.dateFormatter.format(LocalDateTime.now());
-        }
-        filename += ".xls";
-        return filename;
-    }
-
-    private void computeWaterSubValue(List<CategoryEnergyWaterExport> list) {
-        for (int i = 0; i < list.size(); i++) {
-            CategoryEnergyWaterExport a = list.get(i);
-            if (Objects.equals(i + 1, list.size())) {
-                a.setSubValue("--");
-            } else {
-                BigDecimal num1 = NumberUtil.toBigDecimal(a.getValue());
-                BigDecimal num2 = NumberUtil.toBigDecimal(list.get(i + 1).getValue());
-                a.setSubValue(NumberUtil.sub(num1, num2).toString());
-            }
+    @SneakyThrows
+    private void doWrite(List<EnergyData> energyData, HttpServletResponse response, DataQueryForm form) {
+        try (ExcelWriter excelWriter = FastExcel.write(response.getOutputStream())
+            .withTemplate(DeviceService.class.getClassLoader().getResourceAsStream(getResourceName(form.getDataEnum())))
+            .build()) {
+            WriteSheet writeSheet = FastExcel.writerSheet().build();
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+            excelWriter.fill(energyData, fillConfig, writeSheet);
+            Map<String, Object> map = new HashMap<>();
+            map.put("startTime", LocalDateTimeUtil.format(form.getStartDate(), BusinessConstants.DateFormat.EXPORT));
+            map.put("endTime", LocalDateTimeUtil.format(form.getEndDate(), BusinessConstants.DateFormat.EXPORT));
+            excelWriter.fill(map, writeSheet);
         }
     }
 
-    private void computeSteamSubValue(List<CategoryEnergySteamExport> list) {
-        for (int i = 0; i < list.size(); i++) {
-            CategoryEnergySteamExport a = list.get(i);
-            if (Objects.equals(i + 1, list.size())) {
-                a.setSubValue("--");
-            } else {
-                BigDecimal num1 = NumberUtil.toBigDecimal(a.getValue());
-                BigDecimal num2 = NumberUtil.toBigDecimal(list.get(i + 1).getValue());
-                a.setSubValue(NumberUtil.sub(num1, num2).toString());
-            }
-        }
+    private String getResourceName(DetailDataEnum dataType) {
+        return dataType == DetailDataEnum.WATER ? "template/water.xlsx" : "template/gas.xlsx";
+    }
+
+    private String getFileName() {
+        return System.currentTimeMillis() + ".xls";
     }
 
     public List<ChartData> chart(ChartForm form) {
@@ -294,11 +257,7 @@ public class DeviceService {
         if (CollectionUtils.isNotEmpty(chartDataList)) {
             String prefix = form.getDataType() == DetailDataEnum.WATER ? BusinessConstants.Water.NAME_PREFIX
                 : BusinessConstants.Steam.NAME_PREFIX;
-            List<SqYbAliasDto> sqYbAliasDtos = querySqAlias(form.getDataType() == DetailDataEnum.WATER ? 1 : 2);
-            Map<String, String> map = new HashMap<>(16);
-            for (SqYbAliasDto sqYbAliasDto : sqYbAliasDtos) {
-                map.put(sqYbAliasDto.getIdx() + StringUtils.EMPTY, sqYbAliasDto.getName());
-            }
+            Map<String, String> map = getAliasMap(form.getDataType());
             for (ChartTopData chartTopData : chartDataList) {
                 String name = chartTopData.getName();
                 String nameIdx = name.substring(prefix.length());
@@ -309,6 +268,15 @@ public class DeviceService {
             }
         }
         return chartDataList;
+    }
+
+    private Map<String, String> getAliasMap(DetailDataEnum dataType) {
+        List<SqYbAliasDto> sqYbAliasDtos = querySqAlias(dataType == DetailDataEnum.WATER ? 1 : 2);
+        Map<String, String> map = new HashMap<>(16);
+        for (SqYbAliasDto sqYbAliasDto : sqYbAliasDtos) {
+            map.put(sqYbAliasDto.getIdx() + StringUtils.EMPTY, sqYbAliasDto.getName());
+        }
+        return map;
     }
 
     private List<ChartTopData> top(List<CategoryEnergyData> data) {

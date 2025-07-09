@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -20,10 +22,10 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.convert.CategoryConvert;
 import com.lazzen.hec.dto.CategoryEnergyData;
+import com.lazzen.hec.dto.EnergyData;
 import com.lazzen.hec.enumeration.ChartQueryEnum;
 import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.form.DataQueryForm;
@@ -70,39 +72,81 @@ public class StoreRepository {
             .last(SipaBootMysqlConstants.LIMIT_ONE));
     }
 
-    public Page<CategoryEnergy> pageCategoryTotal(DataQueryForm form, String categoryType, String sn) {
-        Page<CategoryEnergy> forWard = pageCategory(form, form.getForwardPointCode(), categoryType, sn);
-        if (form.getDataEnum() == DetailDataEnum.WATER && !StringUtils.isBlank(form.getReversePointCode())
-            && CollectionUtils.isNotEmpty(forWard.getRecords())) {
-            // 水 减去反向流量
-            Page<CategoryEnergy> reverse = pageCategory(form, form.getReversePointCode(), categoryType, sn);
-            if (CollectionUtils.isNotEmpty(reverse.getRecords())) {
-                Map<String,
-                    String> reverseMap = reverse.getRecords()
-                        .stream()
-                        .collect(Collectors.toMap(e -> e.getDateIndex() + e.getHourIndex(),
-                            CategoryEnergy::getRelaTimeValue, (s, s2) -> s2));
-                for (CategoryEnergy record : forWard.getRecords()) {
-                    String reverseValue = reverseMap.get(record.getDateIndex() + record.getHourIndex());
-                    if (StringUtils.isBlank(reverseValue)) {
-                        continue;
+    public List<EnergyData> listCategoryTotal(DataQueryForm form, String categoryType, String sn,
+        Map<String, String> aliasMap) {
+        List<EnergyData> list = new ArrayList<>();
+        for (int i = 0; i < form.getIds().size(); i++) {
+            String id = form.getIds().get(i);
+            String forwardPointCode = form.getForwardPointCodes().get(i);
+            List<CategoryEnergy> forward = listCategory(form, forwardPointCode, categoryType, sn);
+            String reversePointCode = null;
+            if (CollectionUtils.isNotEmpty(form.getReversePointCodes())) {
+                reversePointCode = form.getReversePointCodes().get(i);
+            }
+            if (form.getDataEnum() == DetailDataEnum.WATER && StringUtils.isNotBlank(reversePointCode)
+                && CollectionUtils.isNotEmpty(forward)) {
+                // 水 减去反向流量
+                List<CategoryEnergy> reverse = listCategory(form, reversePointCode, categoryType, sn);
+                if (CollectionUtils.isNotEmpty(reverse)) {
+                    Map<String,
+                        String> reverseMap = reverse.stream()
+                            .collect(Collectors.toMap(e -> e.getDateIndex() + e.getHourIndex(),
+                                CategoryEnergy::getRelaTimeValue, (s, s2) -> s2));
+                    for (CategoryEnergy record : forward) {
+                        String reverseValue = reverseMap.get(record.getDateIndex() + record.getHourIndex());
+                        if (StringUtils.isBlank(reverseValue)) {
+                            continue;
+                        }
+                        String gap = getGap(record.getRelaTimeValue(), reverseValue);
+                        record.setRelaTimeValue(gap);
                     }
-                    BigDecimal num1 = NumberUtil.toBigDecimal(record.getRelaTimeValue());
-                    BigDecimal num2 = NumberUtil.toBigDecimal(reverseValue).abs();
-                    record.setRelaTimeValue(NumberUtil.sub(num1, num2).toString());
                 }
             }
+            if (CollectionUtils.isNotEmpty(forward)) {
+                EnergyData categoryEnergyData = new EnergyData();
+                categoryEnergyData.setId(id);
+                categoryEnergyData.setName(getNameById(id, aliasMap, form.getDataEnum()));
+                String start = forward.get(0).getRelaTimeValue();
+                categoryEnergyData.setStart(start);
+                String end = forward.get(forward.size() - 1).getRelaTimeValue();
+                categoryEnergyData.setEnd(end);
+                categoryEnergyData.setGap(getGap(end, start));
+                list.add(categoryEnergyData);
+            }
         }
-        return forWard;
+        return list;
     }
 
-    private Page<CategoryEnergy> pageCategory(DataQueryForm form, String pointCode, String categoryType, String sn) {
+    private String getNameById(String id, Map<String, String> aliasMap, @NotNull DetailDataEnum dataEnum) {
+        return aliasMap.getOrDefault(id, dataEnum.getNamePrefix() + id);
+    }
+
+    private static String getGap(String start, String end) {
+        BigDecimal num1 = NumberUtil.toBigDecimal(start);
+        BigDecimal num2 = NumberUtil.toBigDecimal(end).abs();
+        String gap = NumberUtil.sub(num1, num2).toString();
+        return gap;
+    }
+
+    private List<CategoryEnergy> listCategory(DataQueryForm form, String pointCode, String categoryType, String sn) {
+        LambdaQueryWrapper<CategoryEnergy> minQueryWrapper =
+            getListCategoryMapper(form, pointCode, categoryType, sn, true);
+        LambdaQueryWrapper<CategoryEnergy> maxQueryWrapper =
+            getListCategoryMapper(form, pointCode, categoryType, sn, false);
+        CategoryEnergy min = categoryEnergyMapper.selectOne(minQueryWrapper);
+        CategoryEnergy max = categoryEnergyMapper.selectOne(maxQueryWrapper);
+        if (min != null && max != null) {
+            return Arrays.asList(min, max);
+        }
+        return Collections.emptyList();
+    }
+
+    private static LambdaQueryWrapper<CategoryEnergy> getListCategoryMapper(DataQueryForm form, String pointCode,
+        String categoryType, String sn, boolean min) {
         LambdaQueryWrapper<CategoryEnergy> queryWrapper = Wrappers.<CategoryEnergy>lambdaQuery()
             .eq(CategoryEnergy::getCategory, categoryType)
             .eq(CategoryEnergy::getCode, pointCode)
-            .eq(CategoryEnergy::getSn, sn)
-            .orderByDesc(CategoryEnergy::getDateIndex)
-            .orderByDesc(CategoryEnergy::getHourIndex);
+            .eq(CategoryEnergy::getSn, sn);
         if (form.getStartDate() != null) {
             String formattedDate = form.getStartDate().format(CategoryConvert.dateFormatter);
             int dateNumber = Integer.parseInt(formattedDate);
@@ -115,7 +159,16 @@ public class StoreRepository {
             queryWrapper.le(CategoryEnergy::getDateIndex, dateNumber)
                 .le(CategoryEnergy::getHourIndex, String.format("%02d", form.getEndDate().getHour()));
         }
-        return categoryEnergyMapper.selectPage(Page.of(form.getPage(), form.getSize()), queryWrapper);
+        if (min) {
+            queryWrapper.orderByAsc(CategoryEnergy::getDateIndex);
+            queryWrapper.orderByAsc(CategoryEnergy::getHourIndex);
+            queryWrapper.last(SipaBootMysqlConstants.LIMIT_ONE);
+        } else {
+            queryWrapper.orderByDesc(CategoryEnergy::getDateIndex);
+            queryWrapper.orderByDesc(CategoryEnergy::getHourIndex);
+            queryWrapper.last(SipaBootMysqlConstants.LIMIT_ONE);
+        }
+        return queryWrapper;
     }
 
     public List<DevicePointData> querySnFromPointData(DetailDataEnum dataType) {
