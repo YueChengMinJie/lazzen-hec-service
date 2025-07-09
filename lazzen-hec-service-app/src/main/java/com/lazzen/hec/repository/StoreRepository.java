@@ -106,18 +106,14 @@ public class StoreRepository {
         if (form.getStartDate() != null) {
             String formattedDate = form.getStartDate().format(CategoryConvert.dateFormatter);
             int dateNumber = Integer.parseInt(formattedDate);
-            queryWrapper.and(wrapper -> wrapper.ge(CategoryEnergy::getDateIndex, dateNumber)
-                .or()
-                .gt(CategoryEnergy::getDateIndex, dateNumber)
-                .and(i -> i.ge(CategoryEnergy::getHourIndex, form.getStartDate().getHour())));
+            queryWrapper.ge(CategoryEnergy::getDateIndex, dateNumber)
+                .ge(CategoryEnergy::getHourIndex, String.format("%02d", form.getStartDate().getHour()));
         }
         if (form.getEndDate() != null) {
             String formattedDate = form.getEndDate().format(CategoryConvert.dateFormatter);
             int dateNumber = Integer.parseInt(formattedDate);
-            queryWrapper.and(wrapper -> wrapper.le(CategoryEnergy::getDateIndex, dateNumber)
-                .or()
-                .lt(CategoryEnergy::getDateIndex, dateNumber)
-                .and(i -> i.le(CategoryEnergy::getHourIndex, form.getEndDate().getHour())));
+            queryWrapper.le(CategoryEnergy::getDateIndex, dateNumber)
+                .le(CategoryEnergy::getHourIndex, String.format("%02d", form.getEndDate().getHour()));
         }
         return categoryEnergyMapper.selectPage(Page.of(form.getPage(), form.getSize()), queryWrapper);
     }
