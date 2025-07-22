@@ -104,4 +104,10 @@ public class DeviceController {
     public ResponseWrapper<CurveDto> curve(@Valid @RequestBody CurveForm form) {
         return ResponseWrapper.successOf(deviceService.curve(form));
     }
+
+    @PostMapping("/analyse")
+    @Operation(summary = "用能分析")
+    public ResponseWrapper<AnalyseDto> analyse(@Valid @RequestBody AnalyseForm form) {
+        return ResponseWrapper.successOf(deviceService.analyse(form));
+    }
 }

@@ -21,6 +21,7 @@ import com.lazzen.hec.convert.DeviceDetailDataConvert;
 import com.lazzen.hec.convert.SteamDetailDataConvert;
 import com.lazzen.hec.convert.WaterDetailDataConvert;
 import com.lazzen.hec.dto.*;
+import com.lazzen.hec.enumeration.ChartQueryEnum;
 import com.lazzen.hec.enumeration.DetailDataEnum;
 import com.lazzen.hec.form.*;
 import com.lazzen.hec.po.DeviceOnlineStatus;
@@ -29,6 +30,7 @@ import com.lazzen.hec.po.IotPointConf;
 import com.lazzen.hec.repository.CommonRepository;
 import com.lazzen.hec.repository.SmartManagementRepository;
 import com.lazzen.hec.repository.StoreRepository;
+import com.sipa.boot.java8.common.archs.threadpool.pojo.Tuple2;
 
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.idev.excel.ExcelWriter;
@@ -348,5 +350,54 @@ public class DeviceService {
             localDateTimes.add(start.plusMinutes(15 * i));
         }
         return localDateTimes;
+    }
+
+    public AnalyseDto analyse(AnalyseForm form) {
+        AnalyseDto dto = new AnalyseDto();
+        if (form.getDateType() == ChartQueryEnum.DAY) {
+            dto.setText1("昨日能耗");
+            dto.setText2("今日能耗");
+            dto.setLegendData(Arrays.asList("昨日", "今日"));
+        } else if (form.getDateType() == ChartQueryEnum.MONTH) {
+            dto.setText1("上月能耗");
+            dto.setText2("本月能耗");
+            dto.setLegendData(Arrays.asList("上月", "本月"));
+        } else if (form.getDateType() == ChartQueryEnum.YEAR) {
+            dto.setText1("去年能耗");
+            dto.setText2("今年能耗");
+            dto.setLegendData(Arrays.asList("去年", "今年"));
+        }
+        String sn = smartManagementRepository.assertSnByDomainCode(form.getDomainCode());
+        Tuple2<List<String>, List<String>> data = storeRepository.analyseData(form, false, sn);
+        Tuple2<List<String>, List<String>> previousData = storeRepository.analyseData(form, true, sn);
+        dto.setXAxisData(data.getFirst());
+        dto.setSeriesData(Arrays.asList(previousData.getSecond(), data.getSecond()));
+        String previous = getSumValue(previousData.getSecond());
+        dto.setValue1(StringUtils.defaultIfEmpty(previous, "--"));
+        String current = getSumValue(data.getSecond());
+        dto.setValue2(StringUtils.defaultIfEmpty(current, "--"));
+        if (previous == null || current == null) {
+            dto.setValue3("--");
+            dto.setText3("--");
+        } else {
+            BigDecimal a = new BigDecimal(previous);
+            BigDecimal b = new BigDecimal(current);
+            BigDecimal delta = b.subtract(a);
+            dto.setValue3(delta.toString());
+            BigDecimal yoy = delta.divide(a, 10, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
+            dto.setText3(yoy + "%");
+        }
+        return dto;
+    }
+
+    private String getSumValue(List<String> value) {
+        if (CollectionUtils.isEmpty(value) || value.stream().allMatch(Objects::isNull)) {
+            return null;
+        }
+        return value.stream()
+            .filter(StringUtils::isNotBlank)
+            .map(BigDecimal::new)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .toString();
     }
 }

@@ -58,5 +58,9 @@ public interface BusinessConstants {
         String DT = "yyyy-MM-dd HH:mm:ss";
 
         String EXPORT = "yyyy/MM/dd HH:mm:ss";
+
+        String YEAR_MONTH_DAY = "yyyy-MM-dd";
+
+        String YEAR_MONTH_WITH_ACROSS = "yyyy-MM";
     }
 }

@@ -1,10 +1,7 @@
 package com.lazzen.hec.repository;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -15,12 +12,12 @@ import java.util.stream.IntStream;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.convert.CategoryConvert;
@@ -28,10 +25,12 @@ import com.lazzen.hec.dto.CategoryEnergyData;
 import com.lazzen.hec.dto.EnergyData;
 import com.lazzen.hec.enumeration.ChartQueryEnum;
 import com.lazzen.hec.enumeration.DetailDataEnum;
+import com.lazzen.hec.form.AnalyseForm;
 import com.lazzen.hec.form.DataQueryForm;
 import com.lazzen.hec.mapper.*;
 import com.lazzen.hec.po.*;
 import com.lazzen.hec.po.base.ActualityObject;
+import com.sipa.boot.java8.common.archs.threadpool.pojo.Tuple2;
 import com.sipa.boot.java8.common.constants.SipaBootCommonConstants;
 import com.sipa.boot.java8.data.mysql.constants.SipaBootMysqlConstants;
 
@@ -680,5 +679,154 @@ public class StoreRepository {
             }
         }
         return result;
+    }
+
+    public Tuple2<List<String>, List<String>> analyseData(AnalyseForm form, boolean previous, String sn) {
+        LocalDateTime startDate;
+        LocalDateTime endDate;
+        LocalDateTime now = LocalDateTime.now();
+        DetailDataEnum dataType = form.getDataType();
+        ChartQueryEnum dateType = form.getDateType();
+
+        List<String> codes = new ArrayList<>();
+        codes.add(form.getForwardPointCode());
+        if (dataType == DetailDataEnum.WATER) {
+            codes.add(form.getReversePointCode());
+        }
+
+        if (previous && dateType == ChartQueryEnum.DAY) {
+            now = now.minusDays(1);
+        } else if (previous && dateType == ChartQueryEnum.MONTH) {
+            now = now.minusMonths(1);
+        } else if (previous && dateType == ChartQueryEnum.YEAR) {
+            now = now.minusYears(1);
+        }
+
+        if (dateType == ChartQueryEnum.DAY || dateType == ChartQueryEnum.MONTH) {
+            if (dateType == ChartQueryEnum.DAY) {
+                startDate = now.with(LocalTime.MIN);
+                endDate = now.plusHours(1).withMinute(0).withSecond(0).withNano(0);
+            } else {
+                startDate = now.toLocalDate().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+                endDate = now.toLocalDate().with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
+            }
+            List<CategoryEnergy> categoryEnergies = this.categoryEnergyMapper.selectList(Wrappers
+                .<CategoryEnergy>lambdaQuery()
+                .eq(CategoryEnergy::getSn, sn)
+                .in(CategoryEnergy::getCode, codes)
+                .ge(CategoryEnergy::getDateIndex,
+                    Integer.parseInt(LocalDateTimeUtil.format(startDate, DateTimeFormatter.BASIC_ISO_DATE)))
+                .le(CategoryEnergy::getDateIndex,
+                    Integer.parseInt(LocalDateTimeUtil.format(endDate, DateTimeFormatter.BASIC_ISO_DATE)))
+                .ge(CategoryEnergy::getHourIndex,
+                    LocalDateTimeUtil.format(startDate, BusinessConstants.DateFormat.HOUR))
+                .le(CategoryEnergy::getHourIndex, LocalDateTimeUtil.format(endDate, BusinessConstants.DateFormat.HOUR))
+                .orderByAsc(CategoryEnergy::getId));
+            if (dateType == ChartQueryEnum.DAY) {
+                List<LocalDateTime> times = new ArrayList<>();
+                LocalDateTime current = startDate;
+                while (!current.isAfter(endDate)) {
+                    times.add(current);
+                    current = current.plusHours(1);
+                }
+
+                Map<String, List<CategoryEnergy>> map =
+                    categoryEnergies.stream().collect(Collectors.groupingBy(categoryEnergy -> {
+                        Long deviceTime = categoryEnergy.getDeviceTime();
+                        LocalDateTime localDateTime =
+                            Instant.ofEpochMilli(deviceTime).atZone(ZoneId.systemDefault()).toLocalDateTime();
+                        return LocalDateTimeUtil.format(localDateTime, BusinessConstants.DateFormat.HOUR) + ":00";
+                    }));
+
+                List<String> xList = new ArrayList<>();
+                List<String> yList = new ArrayList<>();
+                for (LocalDateTime ldt : times) {
+                    String key = LocalDateTimeUtil.format(ldt, BusinessConstants.DateFormat.HOUR) + ":00";
+                    xList.add(key);
+                    if (map.containsKey(key)) {
+                        List<CategoryEnergy> energies = map.get(key);
+                        yList.add(getSumValue(energies));
+                    } else {
+                        yList.add(null);
+                    }
+                }
+                return new Tuple2<>(xList, yList);
+            } else {
+                List<LocalDateTime> times = new ArrayList<>();
+                LocalDateTime current = startDate;
+                while (!current.isAfter(endDate)) {
+                    times.add(current);
+                    current = current.plusDays(1);
+                }
+
+                Map<String, List<CategoryEnergy>> map =
+                    categoryEnergies.stream().collect(Collectors.groupingBy(categoryEnergy -> {
+                        Long deviceTime = categoryEnergy.getDeviceTime();
+                        LocalDateTime localDateTime =
+                            Instant.ofEpochMilli(deviceTime).atZone(ZoneId.systemDefault()).toLocalDateTime();
+                        return LocalDateTimeUtil.format(localDateTime, BusinessConstants.DateFormat.YEAR_MONTH_DAY);
+                    }));
+
+                List<String> xList = new ArrayList<>();
+                List<String> yList = new ArrayList<>();
+                for (LocalDateTime ldt : times) {
+                    String key = LocalDateTimeUtil.format(ldt, BusinessConstants.DateFormat.YEAR_MONTH_DAY);
+                    xList.add(key);
+                    if (map.containsKey(key)) {
+                        List<CategoryEnergy> energies = map.get(key);
+                        yList.add(getSumValue(energies));
+                    } else {
+                        yList.add(null);
+                    }
+                }
+                return new Tuple2<>(xList, yList);
+            }
+        } else {
+            startDate = now.withDayOfYear(1).with(LocalTime.MIN);
+            endDate = now.with(LocalTime.MAX);
+            List<CategoryEnergyMonth> categoryEnergyMonths =
+                this.monthMapper.selectList(Wrappers.<CategoryEnergyMonth>lambdaQuery()
+                    .eq(CategoryEnergyMonth::getSn, sn)
+                    .in(CategoryEnergyMonth::getCode, codes)
+                    .ge(CategoryEnergyMonth::getYearIndex,
+                        startDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR)))
+                    .le(CategoryEnergyMonth::getYearIndex,
+                        endDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR)))
+                    .ge(CategoryEnergyMonth::getDateIndex,
+                        Integer.valueOf(
+                            startDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR_MONTH))))
+                    .le(CategoryEnergyMonth::getDateIndex,
+                        Integer.valueOf(
+                            endDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR_MONTH))))
+                    .orderByAsc(CategoryEnergyMonth::getId));
+            List<LocalDateTime> times = new ArrayList<>();
+            LocalDateTime current = startDate;
+            while (!current.isAfter(endDate)) {
+                times.add(current);
+                current = current.plusMonths(1);
+            }
+
+            Map<String, List<CategoryEnergyMonth>> map =
+                categoryEnergyMonths.stream().collect(Collectors.groupingBy(categoryEnergyMonth -> {
+                    Long deviceTime = categoryEnergyMonth.getDeviceTime();
+                    LocalDateTime localDateTime =
+                        Instant.ofEpochMilli(deviceTime).atZone(ZoneId.systemDefault()).toLocalDateTime();
+                    return LocalDateTimeUtil.format(localDateTime, BusinessConstants.DateFormat.YEAR_MONTH_WITH_ACROSS);
+                }));
+
+            List<String> xList = new ArrayList<>();
+            List<String> yList = new ArrayList<>();
+            for (LocalDateTime ldt : times) {
+                String key = LocalDateTimeUtil.format(ldt, BusinessConstants.DateFormat.YEAR_MONTH_WITH_ACROSS);
+                xList.add(key);
+                if (map.containsKey(key)) {
+                    List<CategoryEnergyMonth> energies = map.get(key);
+                    yList.add(getSumValue(energies));
+                } else {
+                    yList.add(null);
+                }
+            }
+            return new Tuple2<>(xList, yList);
+        }
     }
 }
