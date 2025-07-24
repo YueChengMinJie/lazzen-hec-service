@@ -384,8 +384,12 @@ public class DeviceService {
             BigDecimal b = new BigDecimal(current);
             BigDecimal delta = b.subtract(a);
             dto.setValue3(delta.toString());
-            BigDecimal yoy = delta.divide(a, 10, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
-            dto.setText3(yoy + "%");
+            if (a.compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal yoy = delta.divide(a, 10, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
+                dto.setText3(yoy + "%");
+            } else {
+                dto.setText3("--");
+            }
         }
         return dto;
     }
