@@ -200,7 +200,7 @@ public class StoreRepository {
             List<CategoryEnergy> categoryEnergies = this.categoryEnergyMapper.selectList(Wrappers
                 .<CategoryEnergy>lambdaQuery()
                 .in(CategoryEnergy::getSn, getSnList(devicePointData))
-                .in(CategoryEnergy::getCode, getCodeList(dataType, devicePointData))
+                .in(CategoryEnergy::getGroupCode, getGroupCodeList(dataType, devicePointData))
                 .ge(CategoryEnergy::getDateIndex,
                     Integer.parseInt(LocalDateTimeUtil.format(startDate, DateTimeFormatter.BASIC_ISO_DATE)))
                 .le(CategoryEnergy::getDateIndex,
@@ -263,7 +263,7 @@ public class StoreRepository {
             List<CategoryEnergyMonth> categoryEnergyMonths =
                 this.monthMapper.selectList(Wrappers.<CategoryEnergyMonth>lambdaQuery()
                     .in(CategoryEnergyMonth::getSn, getSnList(devicePointData))
-                    .in(CategoryEnergyMonth::getCode, getCodeList(dataType, devicePointData))
+                    .in(CategoryEnergyMonth::getGroupCode, getGroupCodeList(dataType, devicePointData))
                     .ge(CategoryEnergyMonth::getYearIndex,
                         startDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR)))
                     .le(CategoryEnergyMonth::getYearIndex,
@@ -403,7 +403,7 @@ public class StoreRepository {
         return null;
     }
 
-    private List<String> getCodeList(DetailDataEnum dataType, List<DevicePointData> devicePointData) {
+    private List<String> getGroupCodeList(DetailDataEnum dataType, List<DevicePointData> devicePointData) {
         return devicePointData.stream().filter(dpd -> {
             String name = dpd.getName();
             if (dataType == DetailDataEnum.WATER) {
@@ -413,7 +413,7 @@ public class StoreRepository {
             } else {
                 return false;
             }
-        }).map(DevicePointData::getCode).distinct().collect(Collectors.toList());
+        }).map(DevicePointData::getUnCode).distinct().collect(Collectors.toList());
     }
 
     private static List<String> getSnList(List<DevicePointData> devicePointData) {
@@ -542,7 +542,7 @@ public class StoreRepository {
             List<CategoryEnergy> categoryEnergies = this.categoryEnergyMapper.selectList(Wrappers
                 .<CategoryEnergy>lambdaQuery()
                 .in(CategoryEnergy::getSn, getSnList(devicePointData))
-                .in(CategoryEnergy::getCode, getCodeList(dataType, devicePointData))
+                .in(CategoryEnergy::getGroupCode, getGroupCodeList(dataType, devicePointData))
                 .ge(CategoryEnergy::getDateIndex,
                     Integer.parseInt(LocalDateTimeUtil.format(startDate, DateTimeFormatter.BASIC_ISO_DATE)))
                 .le(CategoryEnergy::getDateIndex,
@@ -583,7 +583,7 @@ public class StoreRepository {
             List<CategoryEnergyMonth> categoryEnergyMonths =
                 this.monthMapper.selectList(Wrappers.<CategoryEnergyMonth>lambdaQuery()
                     .in(CategoryEnergyMonth::getSn, getSnList(devicePointData))
-                    .in(CategoryEnergyMonth::getCode, getCodeList(dataType, devicePointData))
+                    .in(CategoryEnergyMonth::getGroupCode, getGroupCodeList(dataType, devicePointData))
                     .ge(CategoryEnergyMonth::getYearIndex,
                         startDate.format(DateTimeFormatter.ofPattern(BusinessConstants.DateFormat.YEAR)))
                     .le(CategoryEnergyMonth::getYearIndex,
