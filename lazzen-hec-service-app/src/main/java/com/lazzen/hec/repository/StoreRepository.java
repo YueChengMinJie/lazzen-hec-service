@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.common.collect.Lists;
 import com.lazzen.hec.constants.BusinessConstants;
 import com.lazzen.hec.convert.CategoryConvert;
 import com.lazzen.hec.dto.CategoryEnergyData;
@@ -172,9 +173,23 @@ public class StoreRepository {
         return queryWrapper;
     }
 
-    public List<DevicePointData> querySnFromPointData(DetailDataEnum dataType) {
-        return this.devicePointDataMapper.selectList(
-            Wrappers.<DevicePointData>lambdaQuery().eq(DevicePointData::getDeviceType, dataType.getDeviceType()));
+    public List<DevicePointData> querySnFromPointData(DetailDataEnum dataType, boolean isTop) {
+        LambdaQueryWrapper<DevicePointData> wrapper =
+            Wrappers.<DevicePointData>lambdaQuery().eq(DevicePointData::getDeviceType, dataType.getDeviceType());
+        if (isTop) {
+            if (dataType == DetailDataEnum.WATER) {
+                wrapper.notIn(DevicePointData::getName, Lists.newArrayList("正向总量1", "反向总量1", "瞬时流量1"));
+            } else {
+                wrapper.notIn(DevicePointData::getName, Lists.newArrayList("CH1 实时值", "CH1 累积值"));
+            }
+        } else {
+            if (dataType == DetailDataEnum.WATER) {
+                wrapper.in(DevicePointData::getName, Lists.newArrayList("正向总量1", "反向总量1", "瞬时流量1"));
+            } else {
+                wrapper.in(DevicePointData::getName, Lists.newArrayList("CH1 实时值", "CH1 累积值"));
+            }
+        }
+        return this.devicePointDataMapper.selectList(wrapper);
     }
 
     public List<CategoryEnergyData> queryDataByDevicePointData(List<DevicePointData> devicePointData,

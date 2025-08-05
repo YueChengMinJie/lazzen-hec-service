@@ -173,7 +173,7 @@ public class DeviceService {
     }
 
     public List<ChartData> chart(ChartForm form) {
-        List<DevicePointData> devicePointData = storeRepository.querySnFromPointData(form.getDataType());
+        List<DevicePointData> devicePointData = storeRepository.querySnFromPointData(form.getDataType(), false);
         List<ChartData> chartDataList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(devicePointData)) {
             List<CategoryEnergyData> data = storeRepository.queryDataByDevicePointData(devicePointData,
@@ -247,7 +247,7 @@ public class DeviceService {
     }
 
     public List<ChartTopData> chartTop(ChartTopForm form) {
-        List<DevicePointData> devicePointData = storeRepository.querySnFromPointData(form.getDataType());
+        List<DevicePointData> devicePointData = storeRepository.querySnFromPointData(form.getDataType(), true);
         List<ChartTopData> chartDataList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(devicePointData)) {
             List<CategoryEnergyData> data =
