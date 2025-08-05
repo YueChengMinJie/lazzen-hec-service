@@ -149,14 +149,16 @@ public class StoreRepository {
         if (form.getStartDate() != null) {
             String formattedDate = form.getStartDate().format(CategoryConvert.dateFormatter);
             int dateNumber = Integer.parseInt(formattedDate);
-            queryWrapper.ge(CategoryEnergy::getDateIndex, dateNumber)
-                .ge(CategoryEnergy::getHourIndex, String.format("%02d", form.getStartDate().getHour()));
+            queryWrapper.and(wrapper -> wrapper.gt(CategoryEnergy::getDateIndex, dateNumber)
+                .or(wrapper2 -> wrapper2.eq(CategoryEnergy::getDateIndex, dateNumber)
+                    .ge(CategoryEnergy::getHourIndex, String.format("%02d", form.getStartDate().getHour()))));
         }
         if (form.getEndDate() != null) {
             String formattedDate = form.getEndDate().format(CategoryConvert.dateFormatter);
             int dateNumber = Integer.parseInt(formattedDate);
-            queryWrapper.le(CategoryEnergy::getDateIndex, dateNumber)
-                .le(CategoryEnergy::getHourIndex, String.format("%02d", form.getEndDate().getHour()));
+            queryWrapper.and(wrapper -> wrapper.lt(CategoryEnergy::getDateIndex, dateNumber)
+                .or(wrapper2 -> wrapper2.eq(CategoryEnergy::getDateIndex, dateNumber)
+                    .le(CategoryEnergy::getHourIndex, String.format("%02d", form.getStartDate().getHour()))));
         }
         if (min) {
             queryWrapper.orderByAsc(CategoryEnergy::getDateIndex);
