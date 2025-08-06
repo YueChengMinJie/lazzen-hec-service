@@ -159,7 +159,7 @@ public class StoreRepository {
             int dateNumber = Integer.parseInt(formattedDate);
             queryWrapper.and(wrapper -> wrapper.lt(CategoryEnergy::getDateIndex, dateNumber)
                 .or(wrapper2 -> wrapper2.eq(CategoryEnergy::getDateIndex, dateNumber)
-                    .le(CategoryEnergy::getHourIndex, String.format("%02d", form.getStartDate().getHour()))));
+                    .le(CategoryEnergy::getHourIndex, String.format("%02d", form.getEndDate().getHour()))));
         }
         if (min) {
             queryWrapper.orderByAsc(CategoryEnergy::getDateIndex);
